@@ -6,6 +6,7 @@ import os
 
 from src.interface_adapters.presenters.input_validator import is_valid_float, is_valid_int
 from src.interface_adapters.presenters.pagination_presenter import PaginationPresenter
+from src.interface_adapters.presenters.cli_style import cyan, green, yellow, red
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
@@ -67,9 +68,12 @@ class CLIController:
                 start = page * PAGE_SIZE
                 end = start + PAGE_SIZE
                 page_items = productos[start:end]
+                headers = [cyan("#"), cyan("Nombre"), cyan("SKU"), cyan("Precio"), cyan("Stock"), cyan("Estado")]
                 def format_item(p, idx):
-                    return f"{idx}. {p.name} | SKU: {p.sku} | Precio: {p.regular_price} | Stock: {p.stock_quantity} | Estado: {p.status}"
-                PaginationPresenter.show_paginated_list(page_items, page, PAGE_SIZE, total, format_item, title="PRODUCTOS")
+                    estado = green(p.status) if str(p.status).lower() == 'publish' else yellow(p.status)
+                    stock = red(p.stock_quantity) if isinstance(p.stock_quantity, int) and p.stock_quantity <= 0 else p.stock_quantity
+                    return [str(idx), p.name, p.sku, p.regular_price, stock, estado]
+                PaginationPresenter.show_paginated_list(page_items, page, PAGE_SIZE, total, format_item, title="PRODUCTOS", headers=headers)
                 PaginationPresenter.show_navigation_help()
                 cmd = input("Comando [n/p/f/q]: ").strip().lower()
                 if cmd == 'n' and end < total:
@@ -123,7 +127,12 @@ class CLIController:
                 input("Presione Enter para continuar...")
                 return
             self.presenter.show_message("Deje vacío para mantener el valor actual.")
-            nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
+            precio_actual = prod.regular_price if prod.regular_price not in (None, "") else "No definido"
+            nuevo_precio = input(f"Nuevo precio (actual: {precio_actual}): ").strip()
+            if nuevo_precio.lower() == 'q':
+                self.presenter.show_message("Actualización cancelada por el usuario.")
+                input("Presione Enter para volver al menú...")
+                return
             if nuevo_precio:
                 if is_valid_float(nuevo_precio):
                     prod.regular_price = nuevo_precio
@@ -132,6 +141,10 @@ class CLIController:
                     input("Presione Enter para continuar...")
                     return
             nueva_cantidad = input(f"Nueva cantidad en stock (actual: {prod.stock_quantity}): ").strip()
+            if nueva_cantidad.lower() == 'q':
+                self.presenter.show_message("Actualización cancelada por el usuario.")
+                input("Presione Enter para volver al menú...")
+                return
             if nueva_cantidad:
                 if is_valid_int(nueva_cantidad):
                     prod.stock_quantity = int(nueva_cantidad)
@@ -139,6 +152,14 @@ class CLIController:
                     self.presenter.show_error("La cantidad debe ser un número entero.")
                     input("Presione Enter para continuar...")
                     return
+            # Confirmación antes de actualizar
+            print("\nResumen de cambios a aplicar:")
+            print(f"ID: {prod.product_id} | Nombre: {prod.name} | Precio: {prod.regular_price} | Stock: {prod.stock_quantity}")
+            confirm = input("¿Confirma que desea actualizar este producto? (s/N): ").strip().lower()
+            if confirm != 's':
+                self.presenter.show_message("Actualización cancelada por el usuario.")
+                input("Presione Enter para volver al menú...")
+                return
             self.update_product_uc.execute(prod)
             self.presenter.show_message("Producto actualizado correctamente.")
         except ValueError as e:
@@ -165,15 +186,21 @@ class CLIController:
                 if total == 0:
                     PaginationPresenter.show_no_results()
                     break
+                # Detectar si la primera fila es encabezado
+                headers = None
+                data_rows = filtered
+                if filtered and all(cell and isinstance(cell, str) for cell in filtered[0]):
+                    headers = [cyan(str(cell)) for cell in filtered[0]]
+                    data_rows = filtered[1:]
                 start = page * PAGE_SIZE
                 end = start + PAGE_SIZE
-                page_items = filtered[start:end]
-                def format_row(row, idx):
-                    return f"{idx} | " + " | ".join(str(cell) for cell in row)
-                PaginationPresenter.show_paginated_list(page_items, page, PAGE_SIZE, total, format_row, title="DATOS DE GOOGLE SHEETS")
+                page_items = data_rows[start:end]
+                def format_row(row, _idx):
+                    return [str(cell) for cell in row]
+                PaginationPresenter.show_paginated_list(page_items, page, PAGE_SIZE, len(data_rows), format_row, title="DATOS DE GOOGLE SHEETS", headers=headers)
                 PaginationPresenter.show_navigation_help()
                 cmd = input("Comando [n/p/f/q]: ").strip().lower()
-                if cmd == 'n' and end < total:
+                if cmd == 'n' and end < len(data_rows):
                     page += 1
                 elif cmd == 'p' and page > 0:
                     page -= 1

@@ -5,6 +5,7 @@ Path: src/interface_adapters/presenters/product_presenter.py
 import json
 
 from src.shared.logger import logger
+from src.interface_adapters.presenters.cli_style import bold, cyan, yellow, green, red, format_table
 
 class ProductPresenter:
     "Clase para presentar la información del producto."
@@ -29,14 +30,26 @@ class ProductPresenter:
 
     @staticmethod
     def show_product_detail(product):
-        """Muestra detalles de un solo producto (entidad Product)."""
+        """Muestra detalles de un solo producto (entidad Product) en formato tabla y colores."""
         try:
             if not product:
                 logger.warning("Producto no encontrado para mostrar detalle.")
+                print(red("Producto no encontrado."))
                 return
             logger.info("Mostrando detalle de producto: %s", product.product_id)
             logger.debug("Detalle producto: %s", product)
-            logger.info(json.dumps(product.to_dict(), indent=2, ensure_ascii=False))
+            data = product.to_dict()
+            headers = [cyan("Campo"), cyan("Valor")]
+            rows = []
+            for k, v in data.items():
+                if k == 'status' and str(v).lower() == 'publish':
+                    v = green(v)
+                elif k == 'status':
+                    v = yellow(v)
+                elif k == 'stock_quantity' and (isinstance(v, int) and v <= 0):
+                    v = red(v)
+                rows.append([bold(k), v])
+            print(format_table(rows, headers=headers))
         except (AttributeError, TypeError, ValueError) as e:
             logger.error("Error en show_product_detail: %s", e)
 

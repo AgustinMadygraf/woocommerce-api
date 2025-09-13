@@ -4,6 +4,7 @@ Utilidades para estilos y formateo de tablas en CLI.
 """
 
 from colorama import Fore, Style, init as colorama_init
+from tabulate import tabulate
 
 try:
     colorama_init(autoreset=True)
@@ -43,16 +44,23 @@ def red(text):
     return str(text)
 
 def format_table(rows, headers=None):
-    """Devuelve una tabla formateada como string."""
-    if not rows:
-        return ""
-    col_widths = [max(len(str(cell)) for cell in col) for col in zip(*(rows + ([headers] if headers else [])))]
-    def fmt_row(row):
-        return " | ".join(str(cell).ljust(w) for cell, w in zip(row, col_widths))
-    lines = []
-    if headers:
-        lines.append(bold(fmt_row(headers)))
-        lines.append("-+-".join("-" * w for w in col_widths))
-    for row in rows:
-        lines.append(fmt_row(row))
-    return "\n".join(lines)
+    """Devuelve una tabla formateada como string, usando tabulate si está disponible."""
+    try:
+        if headers:
+            return tabulate(rows, headers=headers, tablefmt="fancy_grid", stralign="left", numalign="right", showindex=False)
+        else:
+            return tabulate(rows, tablefmt="fancy_grid", stralign="left", numalign="right", showindex=False)
+    except ImportError:
+        # Fallback manual
+        if not rows:
+            return ""
+        col_widths = [max(len(str(cell)) for cell in col) for col in zip(*(rows + ([headers] if headers else [])))]
+        def fmt_row(row):
+            return " | ".join(str(cell).ljust(w) for cell, w in zip(row, col_widths))
+        lines = []
+        if headers:
+            lines.append(bold(fmt_row(headers)))
+            lines.append("-+-".join("-" * w for w in col_widths))
+        for row in rows:
+            lines.append(fmt_row(row))
+        return "\n".join(lines)

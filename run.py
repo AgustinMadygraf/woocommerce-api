@@ -1,3 +1,7 @@
+"""
+Path: run.py
+"""
+
 from src.interface_adapters.gateways.woocommerce_gateway import WooCommerceGateway
 from src.use_cases.list_products import ListProductsUseCase
 from src.use_cases.get_product_by_sku import GetProductBySkuUseCase

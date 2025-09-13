@@ -2,6 +2,8 @@
 Path: src/interface_adapters/controllers/cli_controller.py
 """
 
+from src.shared.logger import logger
+
 from src.entities.product import Product
 
 class CLIController:
@@ -16,12 +18,14 @@ class CLIController:
 
     def run(self):
         """Flujo principal de interacción CLI."""
-        print("1) Listando hasta 5 productos existentes (si hay):")
-        productos = self.list_products_uc.execute({"per_page": 5, "page": 1})
-        self.presenter.show_product_list([p.to_dict() for p in productos])
+        logger.info("Listando hasta 5 productos existentes (si hay)...")
+        productos = self.list_products_uc.execute({"per_page": 5, "page": 1, "status": "any"})
+        logger.debug("Productos obtenidos: %s", productos)
+        self.presenter.show_product_list(productos)
 
-        print("\n2) Buscando producto de prueba por SKU…")
+        logger.info("Buscando producto de prueba por SKU…")
         prod = self.get_product_by_sku_uc.execute(self.test_sku)
+        logger.debug("Resultado búsqueda SKU %s: %s", self.test_sku, prod)
         if prod:
             self.presenter.show_message(f"   Ya existe: ID {prod.product_id} – {prod.name}")
         else:
@@ -34,14 +38,13 @@ class CLIController:
                 stock_quantity=10,
                 status="draft"
             )
+            logger.debug("Creando producto: %s", new_product)
             prod = self.create_product_uc.execute(new_product)
-            if isinstance(prod, dict):
-                prod = Product.from_dict(prod)
+            logger.debug("Producto creado: %s", prod)
 
-        print("\n3) Actualizando precio a 12.99…")
+        logger.info("Actualizando precio a 12.99…")
         prod.regular_price = "12.99"
         updated = self.update_product_uc.execute(prod)
-        if isinstance(updated, dict):
-            updated = Product.from_dict(updated)
+        logger.debug("Producto actualizado: %s", updated)
         self.presenter.show_message("   Producto actualizado:")
-        self.presenter.show_product_detail(updated.to_dict())
+        self.presenter.show_product_detail(updated)

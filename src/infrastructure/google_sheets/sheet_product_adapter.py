@@ -1,5 +1,5 @@
 """
-Path: src/interface_adapters/transformers/sheet_product_adapter.py
+Path: src/infrastructure/google_sheets/sheet_product_adapter.py
 """
 
 class SheetProductAdapter:

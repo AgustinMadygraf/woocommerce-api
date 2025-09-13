@@ -5,7 +5,8 @@ Path: src/infrastructure/pymysql/product_persistence_gateway_impl.py
 from typing import List, Any
 import pymysql
 
-from src.shared import config
+from src.shared.config import MYSQL_CONFIG
+
 from src.shared.logger import logger
 
 from src.interface_adapters.gateways.product_persistence_gateway import ProductPersistenceGateway
@@ -14,14 +15,19 @@ from src.infrastructure.google_sheets.sheet_product_adapter import SheetProductA
 class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
     """Implementación de ProductPersistenceGateway usando PyMySQL para MySQL."""
     def __init__(self, host=None, user=None, password=None, db=None, port=None):
-        self.connection_params = {
-            'host': host or config.MYSQL_HOST,
-            'user': user or config.MYSQL_USER,
-            'password': password or config.MYSQL_PASSWORD,
-            'database': db or config.MYSQL_DATABASE,
-            'port': port or config.MYSQL_PORT,
-            'cursorclass': pymysql.cursors.DictCursor
-        }
+        self.connection_params = MYSQL_CONFIG.copy()
+        # Permitir sobreescribir parámetros si se pasan al constructor
+        if host is not None:
+            self.connection_params['host'] = host
+        if user is not None:
+            self.connection_params['user'] = user
+        if password is not None:
+            self.connection_params['password'] = password
+        if db is not None:
+            self.connection_params['database'] = db
+        if port is not None:
+            self.connection_params['port'] = port
+        self.connection_params['cursorclass'] = pymysql.cursors.DictCursor
 
     def list_products(self) -> List[Any]:
         logger.debug("Intentando conectar a MySQL para listar productos: %s", self.connection_params)

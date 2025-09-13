@@ -245,7 +245,26 @@ class CLIController:
             if not values or len(values) < 2:
                 self.presenter.show_message("No hay datos suficientes en Google Sheets para actualizar la base local.")
                 return
+
+            # Depuración: mostrar primeras filas y encabezados
+            self.presenter.show_message(f"[DEBUG] Filas obtenidas de Sheets: {len(values)}")
+            self.presenter.show_message(f"[DEBUG] Encabezados: {values[0]}")
+            self.presenter.show_message(f"[DEBUG] Primeras filas de datos: {values[1:3]}")
+
+            # Llamar al caso de uso de actualización
+            if self.update_local_products_from_sheets_uc is None:
+                self.presenter.show_error("Caso de uso para actualizar productos locales no está configurado.")
+                return
+
+            resultado = self.update_local_products_from_sheets_uc.execute(values)
+            if resultado.get("errores"):
+                self.presenter.show_error(f"Errores durante la actualización: {resultado['errores']}")
+            self.presenter.show_message(f"Productos actualizados: {resultado.get('actualizados', 0)} | insertados: {resultado.get('insertados', 0)}")
         except (ValueError, TypeError, KeyError) as e:
             self.presenter.show_message(f"Error al actualizar la base local: {e}")
         except RuntimeError as e:
             self.presenter.show_message(f"Error inesperado al actualizar la base local: {e}")
+        except Exception as e:
+            # Depuración extra para errores no previstos
+            import traceback
+            self.presenter.show_error(f"Error crítico: {e}\n{traceback.format_exc()}")

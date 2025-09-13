@@ -2,7 +2,7 @@
 Path: run.py
 """
 
-from src.interface_adapters.gateways.woocommerce_gateway import WooCommerceGateway
+from src.infrastructure.woocommerce_gateway_impl import WooCommerceProductGateway
 from src.use_cases.list_products import ListProductsUseCase
 from src.use_cases.get_product_by_sku import GetProductBySkuUseCase
 from src.use_cases.create_product import CreateProductUseCase
@@ -13,18 +13,18 @@ from src.interface_adapters.controllers.cli_controller import CLIController
 TEST_SKU = "DEMO-0001"
 
 if __name__ == "__main__":
-    gateway = WooCommerceGateway()
+    gateway = WooCommerceProductGateway()
     list_products = ListProductsUseCase(gateway)
     get_product_by_sku = GetProductBySkuUseCase(gateway)
     create_product = CreateProductUseCase(gateway)
     update_product = UpdateProductUseCase(gateway)
-    presenter = ProductPresenter
+    Presenter = ProductPresenter
     controller = CLIController(
         list_products_uc=list_products,
         get_product_by_sku_uc=get_product_by_sku,
         create_product_uc=create_product,
         update_product_uc=update_product,
-        presenter=presenter,
+        presenter=Presenter,
         test_sku=TEST_SKU
     )
     controller.run()

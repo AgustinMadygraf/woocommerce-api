@@ -14,76 +14,100 @@ class CLIController:
         self.test_sku = test_sku
 
     def run(self):
-        """Bucle principal de interacción CLI con menú de opciones."""
-        while True:
-            print("\n=== MENÚ PRINCIPAL ===")
-            print("1. Listar productos")
-            print("2. Buscar producto por SKU")
-            print("3. Actualizar producto por SKU")
-            print("4. Salir")
-            opcion = input("Seleccione una opción (1-4): ").strip()
-            if opcion not in {"1", "2", "3", "4"}:
-                self.presenter.show_message("Opción no válida. Intente de nuevo.")
-                continue
-            if opcion == "1":
-                per_page_input = input("¿Cuántos productos listar? (default 5): ").strip()
-                if per_page_input and not per_page_input.isdigit():
-                    self.presenter.show_error("Debe ingresar un número válido para la cantidad de productos.")
+        """Bucle principal de interacción CLI con menú de opciones mejorado."""
+        import os
+        try:
+            while True:
+                # Limpiar pantalla (compatible Windows/Linux/Mac)
+                os.system('cls' if os.name == 'nt' else 'clear')
+                print("=" * 40)
+                print("        MENÚ PRINCIPAL")
+                print("=" * 40)
+                print("1. Listar productos")
+                print("2. Buscar producto por SKU")
+                print("3. Actualizar producto por SKU")
+                print("0. Salir")
+                print("-" * 40)
+                opcion = input("Seleccione una opción (0-3): ").strip()
+                if opcion not in {"0", "1", "2", "3"}:
+                    self.presenter.show_message("\n[!] Opción no válida. Intente de nuevo.")
+                    input("Presione Enter para continuar...")
                     continue
-                per_page = int(per_page_input) if per_page_input else 5
-                try:
-                    productos = self.list_products_uc.execute({"per_page": per_page, "page": 1, "status": "any"})
-                    if not productos:
-                        self.presenter.show_message("No se encontraron productos.")
-                    else:
-                        self.presenter.show_product_list(productos)
-                except ValueError as e:
-                    self.presenter.show_error(f"Error de valor al listar productos: {e}")
-                except (TypeError, KeyError) as e:
-                    self.presenter.show_error(f"Error inesperado al listar productos: {e}")
-            elif opcion == "2":
-                sku = input("Ingrese el SKU del producto a buscar: ").strip()
-                if not sku:
-                    self.presenter.show_error("Debe ingresar un SKU válido.")
-                    continue
-                try:
-                    prod = self.get_product_by_sku_uc.execute(sku)
-                    if prod:
-                        self.presenter.show_product_detail(prod)
-                    else:
-                        self.presenter.show_message("Producto no encontrado.")
-                except ValueError as e:
-                    self.presenter.show_error(f"Error de valor al buscar producto: {e}")
-                except (TypeError, KeyError) as e:
-                    self.presenter.show_error(f"Error inesperado al buscar producto: {e}")
-            elif opcion == "3":
-                try:
-                    prod = self.get_product_by_sku_uc.execute(sku)
-                    if not prod:
-                        self.presenter.show_message("Producto no encontrado.")
+                if opcion == "1":
+                    per_page_input = input("¿Cuántos productos listar? (default 5): ").strip()
+                    if per_page_input and not per_page_input.isdigit():
+                        self.presenter.show_error("Debe ingresar un número válido para la cantidad de productos.")
+                        input("Presione Enter para continuar...")
                         continue
-                    print("Deje vacío para mantener el valor actual.")
-                    nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
-                    if nuevo_precio:
-                        try:
-                            float(nuevo_precio)
-                            prod.regular_price = nuevo_precio
-                        except ValueError:
-                            self.presenter.show_error("El precio debe ser un número válido.")
-                            continue
-                    nueva_cantidad = input(f"Nueva cantidad en stock (actual: {prod.stock_quantity}): ").strip()
-                    if nueva_cantidad:
-                        if nueva_cantidad.isdigit():
-                            prod.stock_quantity = int(nueva_cantidad)
+                    per_page = int(per_page_input) if per_page_input else 5
+                    try:
+                        productos = self.list_products_uc.execute({"per_page": per_page, "page": 1, "status": "any"})
+                        if not productos:
+                            self.presenter.show_message("No se encontraron productos.")
                         else:
-                            self.presenter.show_error("La cantidad debe ser un número entero.")
+                            self.presenter.show_product_list(productos)
+                    except ValueError as e:
+                        self.presenter.show_error(f"Error de valor al listar productos: {e}")
+                    except (TypeError, KeyError) as e:
+                        self.presenter.show_error(f"Error inesperado al listar productos: {e}")
+                    input("Presione Enter para volver al menú...")
+                elif opcion == "2":
+                    sku = input("Ingrese el SKU del producto a buscar: ").strip()
+                    if not sku:
+                        self.presenter.show_error("Debe ingresar un SKU válido.")
+                        input("Presione Enter para continuar...")
+                        continue
+                    try:
+                        prod = self.get_product_by_sku_uc.execute(sku)
+                        if prod:
+                            self.presenter.show_product_detail(prod)
+                        else:
+                            self.presenter.show_message("Producto no encontrado.")
+                    except ValueError as e:
+                        self.presenter.show_error(f"Error de valor al buscar producto: {e}")
+                    except (TypeError, KeyError) as e:
+                        self.presenter.show_error(f"Error inesperado al buscar producto: {e}")
+                    input("Presione Enter para volver al menú...")
+                elif opcion == "3":
+                    sku = input("Ingrese el SKU del producto a actualizar: ").strip()
+                    if not sku:
+                        self.presenter.show_error("Debe ingresar un SKU válido.")
+                        input("Presione Enter para continuar...")
+                        continue
+                    try:
+                        prod = self.get_product_by_sku_uc.execute(sku)
+                        if not prod:
+                            self.presenter.show_message("Producto no encontrado.")
+                            input("Presione Enter para continuar...")
                             continue
-                    self.update_product_uc.execute(prod)
-                    self.presenter.show_message("Producto actualizado correctamente.")
-                except ValueError as e:
-                    self.presenter.show_error(f"Error de valor al actualizar producto: {e}")
-                except (TypeError, KeyError) as e:
-                    self.presenter.show_error(f"Error inesperado al actualizar producto: {e}")
-            elif opcion == "4":
-                print("Saliendo del sistema. ¡Hasta luego!")
-                break
+                        print("Deje vacío para mantener el valor actual.")
+                        nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
+                        if nuevo_precio:
+                            try:
+                                float(nuevo_precio)
+                                prod.regular_price = nuevo_precio
+                            except ValueError:
+                                self.presenter.show_error("El precio debe ser un número válido.")
+                                input("Presione Enter para continuar...")
+                                continue
+                        nueva_cantidad = input(f"Nueva cantidad en stock (actual: {prod.stock_quantity}): ").strip()
+                        if nueva_cantidad:
+                            if nueva_cantidad.isdigit():
+                                prod.stock_quantity = int(nueva_cantidad)
+                            else:
+                                self.presenter.show_error("La cantidad debe ser un número entero.")
+                                input("Presione Enter para continuar...")
+                                continue
+                        self.update_product_uc.execute(prod)
+                        self.presenter.show_message("Producto actualizado correctamente.")
+                    except ValueError as e:
+                        self.presenter.show_error(f"Error de valor al actualizar producto: {e}")
+                    except (TypeError, KeyError) as e:
+                        self.presenter.show_error(f"Error inesperado al actualizar producto: {e}")
+                    input("Presione Enter para volver al menú...")
+                elif opcion == "0":
+                    print("\nSaliendo del sistema. ¡Hasta luego!")
+                    break
+        except KeyboardInterrupt:
+            print("\n\n[!] Interrupción detectada. Saliendo del sistema. ¡Hasta luego!")
+            return

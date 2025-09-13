@@ -2,6 +2,8 @@
 Path: src/use_cases/list_products.py
 """
 
+from src.entities.product import Product
+
 class ListProductsUseCase:
     "Caso de uso para listar productos, devolviendo entidades Product."
     def __init__(self, product_gateway):
@@ -9,4 +11,5 @@ class ListProductsUseCase:
 
     def execute(self, params=None):
         "Lista productos con parámetros opcionales y los devuelve como entidades Product."
-        return self.product_gateway.list_products(params)
+        productos = self.product_gateway.list_products(params)
+        return [Product.from_dict(p) for p in productos]

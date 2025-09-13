@@ -5,7 +5,7 @@ Path: src/interface_adapters/presenters/product_presenter.py
 import json
 
 from src.shared.logger import logger
-from src.interface_adapters.presenters.cli_style import bold, cyan, yellow, green, red, format_table
+from src.infrastructure.cli.cli_style import bold, cyan, yellow, green, red, format_table
 
 class ProductPresenter:
     "Clase para presentar la información del producto."

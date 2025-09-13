@@ -3,6 +3,7 @@ Path: src/interface_adapters/controllers/cli_controller.py
 """
 
 import os
+import sqlite3
 
 from src.interface_adapters.presenters.input_validator import is_valid_float, is_valid_int
 from src.interface_adapters.presenters.pagination_presenter import PaginationPresenter
@@ -26,14 +27,16 @@ class CLIController:
                 print("=" * 40)
                 print("        MENÚ PRINCIPAL")
                 print("=" * 40)
-                print("1. Listar productos")
-                print("2. Buscar producto por ID")
-                print("3. Actualizar producto por ID")
+                print("1. Listar productos de WooCommerce")
+                print("2. Buscar producto por ID de WooCommerce")
+                print("3. Actualizar producto por ID de WooCommerce")
                 print("4. Mostrar datos de Google Sheets")
+                print("5. Visualizar datos de SQLite")
+                print("6. Actualizar SQLite desde Google Sheets")
                 print("0. Salir")
                 print("-" * 40)
-                opcion = input("Seleccione una opción (0-4): ").strip()
-                if opcion not in {"0", "1", "2", "3", "4"}:
+                opcion = input("Seleccione una opción (0-6): ").strip()
+                if opcion not in {"0", "1", "2", "3", "4", "5", "6"}:
                     self.presenter.show_message("\n[!] Opción no válida. Intente de nuevo.")
                     input("Presione Enter para continuar...")
                     continue
@@ -45,6 +48,10 @@ class CLIController:
                     self._actualizar_producto_por_id()
                 elif opcion == "4":
                     self._mostrar_datos_google_sheets()
+                elif opcion == "5":
+                    self._visualizar_datos_sqlite()
+                elif opcion == "6":
+                    self._actualizar_sqlite_desde_sheets()
                 elif opcion == "0":
                     self.presenter.show_message("\nSaliendo del sistema. ¡Hasta luego!")
                     break
@@ -214,3 +221,76 @@ class CLIController:
             except (ValueError, TypeError, KeyError) as e:
                 self.presenter.show_error(f"Error al obtener datos de Google Sheets: {e}")
                 break
+
+    def _visualizar_datos_sqlite(self):
+        """Muestra los productos almacenados en la base de datos SQLite."""
+        db_path = "ruta/a/tu_base_de_datos.sqlite"  # Cambia esto por la ruta real
+        try:
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            cursor.execute("SELECT id, name, sku, regular_price, stock_quantity, status, type FROM products")
+            rows = cursor.fetchall()
+            if not rows:
+                self.presenter.show_message("No hay productos en la base de datos SQLite.")
+            else:
+                self.presenter.show_message("Productos en SQLite:")
+                for row in rows:
+                    self.presenter.show_message(
+                        f"ID: {row[0]}, Nombre: {row[1]}, SKU: {row[2]}, Precio: {row[3]}, Stock: {row[4]}, Estado: {row[5]}, Tipo: {row[6]}"
+                    )
+            conn.close()
+        except (sqlite3.DatabaseError, sqlite3.OperationalError) as e:
+            self.presenter.show_message(f"Error al acceder a SQLite: {e}")
+
+    def _actualizar_sqlite_desde_sheets(self):
+        """Actualiza la base de datos SQLite con los datos de Google Sheets."""
+        db_path = "/db.sqlite"  # Cambia esto por la ruta real
+        try:
+            values = self.list_sheet_values_uc.execute()
+            if not values or len(values) < 2:
+                self.presenter.show_message("No hay datos suficientes en Google Sheets para actualizar SQLite.")
+                return
+
+            headers = [str(h).strip().lower() for h in values[0]]
+            # Espera columnas: id, name, sku, regular_price, stock_quantity, status, type
+            required_cols = ["id", "name", "sku", "regular_price", "stock_quantity", "status", "type"]
+            if not all(col in headers for col in required_cols):
+                self.presenter.show_message("Las columnas requeridas no están presentes en Google Sheets.")
+                return
+
+            idx = {col: headers.index(col) for col in required_cols}
+            conn = sqlite3.connect(db_path)
+            cursor = conn.cursor()
+            actualizados = 0
+            insertados = 0
+
+            for row in values[1:]:
+                if len(row) < len(headers):
+                    continue  # Salta filas incompletas
+                data = {col: row[idx[col]] for col in required_cols}
+                # Intenta actualizar, si no existe, inserta
+                cursor.execute("SELECT COUNT(*) FROM products WHERE id = ?", (data["id"],))
+                existe = cursor.fetchone()[0]
+                if existe:
+                    cursor.execute("""
+                        UPDATE products SET
+                            name = ?, sku = ?, regular_price = ?, stock_quantity = ?, status = ?, type = ?
+                        WHERE id = ?
+                    """, (
+                        data["name"], data["sku"], data["regular_price"], data["stock_quantity"], data["status"], data["type"], data["id"]
+                    ))
+                    actualizados += 1
+                else:
+                    cursor.execute("""
+                        INSERT INTO products (id, name, sku, regular_price, stock_quantity, status, type)
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """, (
+                        data["id"], data["name"], data["sku"], data["regular_price"], data["stock_quantity"], data["status"], data["type"]
+                    ))
+                    insertados += 1
+
+            conn.commit()
+            conn.close()
+            self.presenter.show_message(f"Actualización completada. Filas actualizadas: {actualizados}, insertadas: {insertados}")
+        except (sqlite3.DatabaseError, sqlite3.OperationalError) as e:
+            self.presenter.show_message(f"Error al actualizar SQLite: {e}")

@@ -13,7 +13,16 @@ from src.shared.logger import logger
 from src.interface_adapters.gateways.base_gateway import BaseProductGateway
 
 class WooCommerceProductGateway(BaseProductGateway):
-    """Implementación concreta del gateway de productos usando WooCommerce API."""
+    "Implementación concreta del gateway de productos usando WooCommerce API."
+    def get_product_by_id(self, product_id: int) -> Optional[Dict[str, Any]]:
+        """Obtener un producto por su ID usando la API de WooCommerce."""
+        try:
+            response = self.wcapi.get(f"products/{product_id}")
+            response.raise_for_status()
+            return response.json()
+        except (requests.exceptions.RequestException, ValueError) as e:
+            logger.error("Error al buscar producto por ID: %s", e)
+            return None
     def __init__(self):
         self.wcapi = API(
             url=URL,

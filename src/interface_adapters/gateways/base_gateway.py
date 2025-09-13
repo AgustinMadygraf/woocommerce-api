@@ -7,9 +7,15 @@ from typing import Any, Dict, List, Optional
 
 class BaseProductGateway(ABC):
     "Interfaz base para gateways de productos."
+
     @abstractmethod
     def get_product_by_sku(self, sku: str) -> Optional[Dict[str, Any]]:
         "Obtener un producto por su SKU."
+        pass # pylint: disable=unnecessary-pass
+
+    @abstractmethod
+    def get_product_by_id(self, product_id: int) -> Optional[Dict[str, Any]]:
+        "Obtener un producto por su ID."
         pass # pylint: disable=unnecessary-pass
 
     @abstractmethod

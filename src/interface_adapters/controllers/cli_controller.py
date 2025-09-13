@@ -6,9 +6,9 @@ import os
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
-    def __init__(self, list_products_uc, get_product_by_sku_uc, create_product_uc, update_product_uc, presenter, test_sku="DEMO-0001"):
+    def __init__(self, list_products_uc, get_product_by_id_uc, create_product_uc, update_product_uc, presenter, test_sku="DEMO-0001"):
         self.list_products_uc = list_products_uc
-        self.get_product_by_sku_uc = get_product_by_sku_uc
+        self.get_product_by_id_uc = get_product_by_id_uc
         self.create_product_uc = create_product_uc
         self.update_product_uc = update_product_uc
         self.presenter = presenter
@@ -23,8 +23,8 @@ class CLIController:
                 print("        MENÚ PRINCIPAL")
                 print("=" * 40)
                 print("1. Listar productos")
-                print("2. Buscar producto por SKU")
-                print("3. Actualizar producto por SKU")
+                print("2. Buscar producto por ID")
+                print("3. Actualizar producto por ID")
                 print("0. Salir")
                 print("-" * 40)
                 opcion = input("Seleccione una opción (0-3): ").strip()
@@ -51,13 +51,14 @@ class CLIController:
                         self.presenter.show_error(f"Error inesperado al listar productos: {e}")
                     input("Presione Enter para volver al menú...")
                 elif opcion == "2":
-                    sku = input("Ingrese el SKU del producto a buscar: ").strip()
-                    if not sku:
-                        self.presenter.show_error("Debe ingresar un SKU válido.")
+                    id_input = input("Ingrese el ID del producto a buscar: ").strip()
+                    if not id_input or not id_input.isdigit():
+                        self.presenter.show_error("Debe ingresar un ID válido.")
                         input("Presione Enter para continuar...")
                         continue
+                    product_id = int(id_input)
                     try:
-                        prod = self.get_product_by_sku_uc.execute(sku)
+                        prod = self.get_product_by_id_uc.execute(product_id)
                         if prod:
                             self.presenter.show_product_detail(prod)
                         else:
@@ -68,13 +69,14 @@ class CLIController:
                         self.presenter.show_error(f"Error inesperado al buscar producto: {e}")
                     input("Presione Enter para volver al menú...")
                 elif opcion == "3":
-                    sku = input("Ingrese el SKU del producto a actualizar: ").strip()
-                    if not sku:
-                        self.presenter.show_error("Debe ingresar un SKU válido.")
+                    id_input = input("Ingrese el ID del producto a actualizar: ").strip()
+                    if not id_input or not id_input.isdigit():
+                        self.presenter.show_error("Debe ingresar un ID válido.")
                         input("Presione Enter para continuar...")
                         continue
+                    product_id = int(id_input)
                     try:
-                        prod = self.get_product_by_sku_uc.execute(sku)
+                        prod = self.get_product_by_id_uc.execute(product_id)
                         if not prod:
                             self.presenter.show_message("Producto no encontrado.")
                             input("Presione Enter para continuar...")

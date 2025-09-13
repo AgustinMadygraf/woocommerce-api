@@ -1,5 +1,5 @@
 """
-Path: src/interface_adapters/gateways/base_gateway.py
+Path: src/entities/gateways/base_product_gateway.py
 """
 
 from abc import ABC, abstractmethod

@@ -36,82 +36,94 @@ class CLIController:
                     input("Presione Enter para continuar...")
                     continue
                 if opcion == "1":
-                    try:
-                        productos = self.list_products_uc.execute({"status": "any"})
-                        if not productos:
-                            self.presenter.show_message("No se encontraron productos.")
-                        else:
-                            self.presenter.show_product_list(productos)
-                    except ValueError as e:
-                        self.presenter.show_error(f"Error de valor al listar productos: {e}")
-                    except (TypeError, KeyError) as e:
-                        self.presenter.show_error(f"Error inesperado al listar productos: {e}")
-                    input("Presione Enter para volver al menú...")
+                    self._listar_productos()
                 elif opcion == "2":
-                    id_input = input("Ingrese el ID del producto a buscar: ").strip()
-                    if not is_valid_int(id_input):
-                        self.presenter.show_error("Debe ingresar un ID válido.")
-                        input("Presione Enter para continuar...")
-                        continue
-                    product_id = int(id_input)
-                    try:
-                        prod = self.get_product_by_id_uc.execute(product_id)
-                        if prod:
-                            self.presenter.show_product_detail(prod)
-                        else:
-                            self.presenter.show_message("Producto no encontrado.")
-                    except ValueError as e:
-                        self.presenter.show_error(f"Error de valor al buscar producto: {e}")
-                    except (TypeError, KeyError) as e:
-                        self.presenter.show_error(f"Error inesperado al buscar producto: {e}")
-                    input("Presione Enter para volver al menú...")
+                    self._buscar_producto_por_id()
                 elif opcion == "3":
-                    id_input = input("Ingrese el ID del producto a actualizar: ").strip()
-                    if not is_valid_int(id_input):
-                        self.presenter.show_error("Debe ingresar un ID válido.")
-                        input("Presione Enter para continuar...")
-                        continue
-                    product_id = int(id_input)
-                    try:
-                        prod = self.get_product_by_id_uc.execute(product_id)
-                        if not prod:
-                            self.presenter.show_message("Producto no encontrado.")
-                            input("Presione Enter para continuar...")
-                            continue
-                        self.presenter.show_message("Deje vacío para mantener el valor actual.")
-                        nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
-                        if nuevo_precio:
-                            if is_valid_float(nuevo_precio):
-                                prod.regular_price = nuevo_precio
-                            else:
-                                self.presenter.show_error("El precio debe ser un número válido.")
-                                input("Presione Enter para continuar...")
-                                continue
-                        nueva_cantidad = input(f"Nueva cantidad en stock (actual: {prod.stock_quantity}): ").strip()
-                        if nueva_cantidad:
-                            if is_valid_int(nueva_cantidad):
-                                prod.stock_quantity = int(nueva_cantidad)
-                            else:
-                                self.presenter.show_error("La cantidad debe ser un número entero.")
-                                input("Presione Enter para continuar...")
-                                continue
-                        self.update_product_uc.execute(prod)
-                        self.presenter.show_message("Producto actualizado correctamente.")
-                    except ValueError as e:
-                        self.presenter.show_error(f"Error de valor al actualizar producto: {e}")
-                    except (TypeError, KeyError) as e:
-                        self.presenter.show_error(f"Error inesperado al actualizar producto: {e}")
-                    input("Presione Enter para volver al menú...")
+                    self._actualizar_producto_por_id()
                 elif opcion == "4":
-                    try:
-                        values = self.list_sheet_values_uc.execute()
-                        self.presenter.show_sheet_values(values)
-                    except (ValueError, TypeError, KeyError) as e:
-                        self.presenter.show_error(f"Error al obtener datos de Google Sheets: {e}")
-                    input("Presione Enter para volver al menú...")
+                    self._mostrar_datos_google_sheets()
                 elif opcion == "0":
                     self.presenter.show_message("\nSaliendo del sistema. ¡Hasta luego!")
                     break
         except KeyboardInterrupt:
             self.presenter.show_message("\n\n[!] Interrupción detectada. Saliendo del sistema. ¡Hasta luego!")
             return
+
+    def _listar_productos(self):
+        try:
+            productos = self.list_products_uc.execute({"status": "any"})
+            if not productos:
+                self.presenter.show_message("No se encontraron productos.")
+            else:
+                self.presenter.show_product_list(productos)
+        except ValueError as e:
+            self.presenter.show_error(f"Error de valor al listar productos: {e}")
+        except (TypeError, KeyError) as e:
+            self.presenter.show_error(f"Error inesperado al listar productos: {e}")
+        input("Presione Enter para volver al menú...")
+
+    def _buscar_producto_por_id(self):
+        id_input = input("Ingrese el ID del producto a buscar: ").strip()
+        if not is_valid_int(id_input):
+            self.presenter.show_error("Debe ingresar un ID válido.")
+            input("Presione Enter para continuar...")
+            return
+        product_id = int(id_input)
+        try:
+            prod = self.get_product_by_id_uc.execute(product_id)
+            if prod:
+                self.presenter.show_product_detail(prod)
+            else:
+                self.presenter.show_message("Producto no encontrado.")
+        except ValueError as e:
+            self.presenter.show_error(f"Error de valor al buscar producto: {e}")
+        except (TypeError, KeyError) as e:
+            self.presenter.show_error(f"Error inesperado al buscar producto: {e}")
+        input("Presione Enter para volver al menú...")
+
+    def _actualizar_producto_por_id(self):
+        id_input = input("Ingrese el ID del producto a actualizar: ").strip()
+        if not is_valid_int(id_input):
+            self.presenter.show_error("Debe ingresar un ID válido.")
+            input("Presione Enter para continuar...")
+            return
+        product_id = int(id_input)
+        try:
+            prod = self.get_product_by_id_uc.execute(product_id)
+            if not prod:
+                self.presenter.show_message("Producto no encontrado.")
+                input("Presione Enter para continuar...")
+                return
+            self.presenter.show_message("Deje vacío para mantener el valor actual.")
+            nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
+            if nuevo_precio:
+                if is_valid_float(nuevo_precio):
+                    prod.regular_price = nuevo_precio
+                else:
+                    self.presenter.show_error("El precio debe ser un número válido.")
+                    input("Presione Enter para continuar...")
+                    return
+            nueva_cantidad = input(f"Nueva cantidad en stock (actual: {prod.stock_quantity}): ").strip()
+            if nueva_cantidad:
+                if is_valid_int(nueva_cantidad):
+                    prod.stock_quantity = int(nueva_cantidad)
+                else:
+                    self.presenter.show_error("La cantidad debe ser un número entero.")
+                    input("Presione Enter para continuar...")
+                    return
+            self.update_product_uc.execute(prod)
+            self.presenter.show_message("Producto actualizado correctamente.")
+        except ValueError as e:
+            self.presenter.show_error(f"Error de valor al actualizar producto: {e}")
+        except (TypeError, KeyError) as e:
+            self.presenter.show_error(f"Error inesperado al actualizar producto: {e}")
+        input("Presione Enter para volver al menú...")
+
+    def _mostrar_datos_google_sheets(self):
+        try:
+            values = self.list_sheet_values_uc.execute()
+            self.presenter.show_sheet_values(values)
+        except (ValueError, TypeError, KeyError) as e:
+            self.presenter.show_error(f"Error al obtener datos de Google Sheets: {e}")
+        input("Presione Enter para volver al menú...")

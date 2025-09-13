@@ -3,17 +3,18 @@ Path: src/interface_adapters/controllers/cli_controller.py
 """
 
 import os
-from src.interface_adapters.presenters.input_validator import is_valid_int
+
+from src.interface_adapters.presenters.input_validator import is_valid_float, is_valid_int
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
-    def __init__(self, list_products_uc, get_product_by_id_uc, create_product_uc, update_product_uc, presenter, test_sku="DEMO-0001"):
+    def __init__(self, list_products_uc, get_product_by_id_uc, create_product_uc, update_product_uc, presenter, list_sheet_values_uc=None):
         self.list_products_uc = list_products_uc
         self.get_product_by_id_uc = get_product_by_id_uc
         self.create_product_uc = create_product_uc
         self.update_product_uc = update_product_uc
         self.presenter = presenter
-        self.test_sku = test_sku
+        self.list_sheet_values_uc = list_sheet_values_uc
 
     def run(self):
         """Bucle principal de interacción CLI con menú de opciones mejorado."""
@@ -26,10 +27,11 @@ class CLIController:
                 print("1. Listar productos")
                 print("2. Buscar producto por ID")
                 print("3. Actualizar producto por ID")
+                print("4. Mostrar datos de Google Sheets")
                 print("0. Salir")
                 print("-" * 40)
-                opcion = input("Seleccione una opción (0-3): ").strip()
-                if opcion not in {"0", "1", "2", "3"}:
+                opcion = input("Seleccione una opción (0-4): ").strip()
+                if opcion not in {"0", "1", "2", "3", "4"}:
                     self.presenter.show_message("\n[!] Opción no válida. Intente de nuevo.")
                     input("Presione Enter para continuar...")
                     continue
@@ -79,7 +81,6 @@ class CLIController:
                         self.presenter.show_message("Deje vacío para mantener el valor actual.")
                         nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
                         if nuevo_precio:
-                            from src.interface_adapters.presenters.input_validator import is_valid_float
                             if is_valid_float(nuevo_precio):
                                 prod.regular_price = nuevo_precio
                             else:
@@ -100,6 +101,13 @@ class CLIController:
                         self.presenter.show_error(f"Error de valor al actualizar producto: {e}")
                     except (TypeError, KeyError) as e:
                         self.presenter.show_error(f"Error inesperado al actualizar producto: {e}")
+                    input("Presione Enter para volver al menú...")
+                elif opcion == "4":
+                    try:
+                        values = self.list_sheet_values_uc.execute()
+                        self.presenter.show_sheet_values(values)
+                    except (ValueError, TypeError, KeyError) as e:
+                        self.presenter.show_error(f"Error al obtener datos de Google Sheets: {e}")
                     input("Presione Enter para volver al menú...")
                 elif opcion == "0":
                     self.presenter.show_message("\nSaliendo del sistema. ¡Hasta luego!")

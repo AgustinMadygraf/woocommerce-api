@@ -55,3 +55,14 @@ class ProductPresenter:
             logger.error("ERROR: %s", message)
         except (TypeError, ValueError) as e:
             logger.critical("Error en show_error: %s", e)
+
+    @staticmethod
+    def show_sheet_values(values):
+        """Muestra los valores de una hoja de cálculo."""
+        if not values:
+            print("No hay datos en la hoja.")
+            return
+        print("\n=== DATOS DE GOOGLE SHEETS ===")
+        for row in values:
+            print(" | ".join(str(cell) for cell in row))
+        print("=== FIN DE DATOS ===\n")

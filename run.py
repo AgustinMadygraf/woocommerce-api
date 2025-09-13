@@ -3,12 +3,12 @@ Path: run.py
 """
 
 from src.infrastructure.woocommerce_gateway_impl import WooCommerceProductGateway
+from src.interface_adapters.presenters.product_presenter import ProductPresenter
+from src.interface_adapters.controllers.cli_controller import CLIController
 from src.use_cases.list_products import ListProductsUseCase
 from src.use_cases.get_product_by_sku import GetProductBySkuUseCase
 from src.use_cases.create_product import CreateProductUseCase
 from src.use_cases.update_product import UpdateProductUseCase
-from src.interface_adapters.presenters.product_presenter import ProductPresenter
-from src.interface_adapters.controllers.cli_controller import CLIController
 
 TEST_SKU = "DEMO-0001"
 

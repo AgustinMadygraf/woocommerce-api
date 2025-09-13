@@ -7,9 +7,10 @@ from typing import Any, Dict, List, Optional
 from woocommerce import API
 import requests
 
-from src.interface_adapters.gateways.base_gateway import BaseProductGateway
 from src.shared.config import URL, CK, CS
 from src.shared.logger import logger
+
+from src.interface_adapters.gateways.base_gateway import BaseProductGateway
 
 class WooCommerceProductGateway(BaseProductGateway):
     """Implementación concreta del gateway de productos usando WooCommerce API."""

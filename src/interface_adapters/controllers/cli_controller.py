@@ -2,6 +2,7 @@
 Path: src/interface_adapters/controllers/cli_controller.py
 """
 
+import os
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
@@ -15,10 +16,8 @@ class CLIController:
 
     def run(self):
         """Bucle principal de interacción CLI con menú de opciones mejorado."""
-        import os
         try:
             while True:
-                # Limpiar pantalla (compatible Windows/Linux/Mac)
                 os.system('cls' if os.name == 'nt' else 'clear')
                 print("=" * 40)
                 print("        MENÚ PRINCIPAL")

@@ -3,6 +3,7 @@ Path: src/interface_adapters/presenters/product_presenter.py
 """
 
 import json
+
 from src.shared.logger import logger
 
 class ProductPresenter:

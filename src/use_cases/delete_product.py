@@ -11,4 +11,4 @@ class DeleteProductUseCase:
 
     def execute(self, product: Product, force=True):
         "Elimina un producto usando la entidad Product."
-        return self.product_gateway.delete_product(product.id, force=force)
+        return self.product_gateway.delete_product(product.product_id, force=force)

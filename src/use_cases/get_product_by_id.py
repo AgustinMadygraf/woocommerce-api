@@ -5,7 +5,7 @@ Path: src/use_cases/get_product_by_id.py
 from typing import Optional
 
 from src.entities.product import Product
-from src.entities.gateways.base_product_gateway import BaseProductGateway
+from src.interface_adapters.gateways.base_product_gateway import BaseProductGateway
 
 class GetProductByIdUseCase:
     " Caso de uso para obtener un producto por su ID, devolviendo una entidad Product."

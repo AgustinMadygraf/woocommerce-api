@@ -3,6 +3,7 @@ Path: src/interface_adapters/controllers/cli_controller.py
 """
 
 import os
+from src.interface_adapters.presenters.input_validator import is_valid_int
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
@@ -34,7 +35,7 @@ class CLIController:
                     continue
                 if opcion == "1":
                     per_page_input = input("¿Cuántos productos listar? (default 5): ").strip()
-                    if per_page_input and not per_page_input.isdigit():
+                    if per_page_input and not is_valid_int(per_page_input):
                         self.presenter.show_error("Debe ingresar un número válido para la cantidad de productos.")
                         input("Presione Enter para continuar...")
                         continue
@@ -52,7 +53,7 @@ class CLIController:
                     input("Presione Enter para volver al menú...")
                 elif opcion == "2":
                     id_input = input("Ingrese el ID del producto a buscar: ").strip()
-                    if not id_input or not id_input.isdigit():
+                    if not is_valid_int(id_input):
                         self.presenter.show_error("Debe ingresar un ID válido.")
                         input("Presione Enter para continuar...")
                         continue
@@ -70,7 +71,7 @@ class CLIController:
                     input("Presione Enter para volver al menú...")
                 elif opcion == "3":
                     id_input = input("Ingrese el ID del producto a actualizar: ").strip()
-                    if not id_input or not id_input.isdigit():
+                    if not is_valid_int(id_input):
                         self.presenter.show_error("Debe ingresar un ID válido.")
                         input("Presione Enter para continuar...")
                         continue
@@ -81,19 +82,19 @@ class CLIController:
                             self.presenter.show_message("Producto no encontrado.")
                             input("Presione Enter para continuar...")
                             continue
-                        print("Deje vacío para mantener el valor actual.")
+                        self.presenter.show_message("Deje vacío para mantener el valor actual.")
                         nuevo_precio = input(f"Nuevo precio (actual: {prod.regular_price}): ").strip()
                         if nuevo_precio:
-                            try:
-                                float(nuevo_precio)
+                            from src.interface_adapters.presenters.input_validator import is_valid_float
+                            if is_valid_float(nuevo_precio):
                                 prod.regular_price = nuevo_precio
-                            except ValueError:
+                            else:
                                 self.presenter.show_error("El precio debe ser un número válido.")
                                 input("Presione Enter para continuar...")
                                 continue
                         nueva_cantidad = input(f"Nueva cantidad en stock (actual: {prod.stock_quantity}): ").strip()
                         if nueva_cantidad:
-                            if nueva_cantidad.isdigit():
+                            if is_valid_int(nueva_cantidad):
                                 prod.stock_quantity = int(nueva_cantidad)
                             else:
                                 self.presenter.show_error("La cantidad debe ser un número entero.")
@@ -107,8 +108,8 @@ class CLIController:
                         self.presenter.show_error(f"Error inesperado al actualizar producto: {e}")
                     input("Presione Enter para volver al menú...")
                 elif opcion == "0":
-                    print("\nSaliendo del sistema. ¡Hasta luego!")
+                    self.presenter.show_message("\nSaliendo del sistema. ¡Hasta luego!")
                     break
         except KeyboardInterrupt:
-            print("\n\n[!] Interrupción detectada. Saliendo del sistema. ¡Hasta luego!")
+            self.presenter.show_message("\n\n[!] Interrupción detectada. Saliendo del sistema. ¡Hasta luego!")
             return

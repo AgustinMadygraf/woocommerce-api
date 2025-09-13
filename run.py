@@ -2,7 +2,7 @@
 Path: run.py
 """
 
-from src.infrastructure.woocommerce_gateway_impl import WooCommerceProductGateway
+from src.infrastructure.woocommerce.gateway_impl import WooCommerceProductGateway
 from src.interface_adapters.presenters.product_presenter import ProductPresenter
 from src.interface_adapters.controllers.cli_controller import CLIController
 from src.use_cases.list_products import ListProductsUseCase

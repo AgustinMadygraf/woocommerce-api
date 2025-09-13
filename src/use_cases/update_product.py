@@ -12,5 +12,5 @@ class UpdateProductUseCase:
     def execute(self, product: Product):
         "Actualiza un producto usando la entidad Product."
         data = product.to_dict()
-        product_id = product.id
+        product_id = product.product_id  # <-- corregido aquí
         return self.product_gateway.update_product(product_id, data)

@@ -5,6 +5,7 @@ Path: src/interface_adapters/controllers/cli_controller.py
 import os
 
 from src.interface_adapters.presenters.input_validator import is_valid_float, is_valid_int
+from src.interface_adapters.presenters.pagination_presenter import PaginationPresenter
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
@@ -51,17 +52,43 @@ class CLIController:
             return
 
     def _listar_productos(self):
-        try:
-            productos = self.list_products_uc.execute({"status": "any"})
-            if not productos:
-                self.presenter.show_message("No se encontraron productos.")
-            else:
-                self.presenter.show_product_list(productos)
-        except ValueError as e:
-            self.presenter.show_error(f"Error de valor al listar productos: {e}")
-        except (TypeError, KeyError) as e:
-            self.presenter.show_error(f"Error inesperado al listar productos: {e}")
-        input("Presione Enter para volver al menú...")
+        PAGE_SIZE = 5
+        page = 0
+        filtro_nombre = None
+        while True:
+            try:
+                productos = self.list_products_uc.execute({"status": "any"})
+                if filtro_nombre:
+                    productos = [p for p in productos if filtro_nombre.lower() in p.name.lower()]
+                total = len(productos)
+                if total == 0:
+                    PaginationPresenter.show_no_results()
+                    break
+                start = page * PAGE_SIZE
+                end = start + PAGE_SIZE
+                page_items = productos[start:end]
+                def format_item(p, idx):
+                    return f"{idx}. {p.name} | SKU: {p.sku} | Precio: {p.regular_price} | Stock: {p.stock_quantity} | Estado: {p.status}"
+                PaginationPresenter.show_paginated_list(page_items, page, PAGE_SIZE, total, format_item, title="PRODUCTOS")
+                PaginationPresenter.show_navigation_help()
+                cmd = input("Comando [n/p/f/q]: ").strip().lower()
+                if cmd == 'n' and end < total:
+                    page += 1
+                elif cmd == 'p' and page > 0:
+                    page -= 1
+                elif cmd == 'f':
+                    filtro_nombre = input("Filtrar por nombre (dejar vacío para quitar filtro): ").strip() or None
+                    page = 0
+                elif cmd == 'q':
+                    break
+                else:
+                    print("Comando no reconocido o fuera de rango.")
+            except ValueError as e:
+                self.presenter.show_error(f"Error de valor al listar productos: {e}")
+                break
+            except (TypeError, KeyError) as e:
+                self.presenter.show_error(f"Error inesperado al listar productos: {e}")
+                break
 
     def _buscar_producto_por_id(self):
         id_input = input("Ingrese el ID del producto a buscar: ").strip()
@@ -121,9 +148,42 @@ class CLIController:
         input("Presione Enter para volver al menú...")
 
     def _mostrar_datos_google_sheets(self):
-        try:
-            values = self.list_sheet_values_uc.execute()
-            self.presenter.show_sheet_values(values)
-        except (ValueError, TypeError, KeyError) as e:
-            self.presenter.show_error(f"Error al obtener datos de Google Sheets: {e}")
-        input("Presione Enter para volver al menú...")
+        PAGE_SIZE = 10
+        page = 0
+        filtro = None
+        while True:
+            try:
+                values = self.list_sheet_values_uc.execute()
+                if not values or len(values) == 0:
+                    PaginationPresenter.show_no_results()
+                    break
+                # Filtrar por texto en cualquier celda
+                filtered = values
+                if filtro:
+                    filtered = [row for row in values if any(filtro.lower() in str(cell).lower() for cell in row)]
+                total = len(filtered)
+                if total == 0:
+                    PaginationPresenter.show_no_results()
+                    break
+                start = page * PAGE_SIZE
+                end = start + PAGE_SIZE
+                page_items = filtered[start:end]
+                def format_row(row, idx):
+                    return f"{idx} | " + " | ".join(str(cell) for cell in row)
+                PaginationPresenter.show_paginated_list(page_items, page, PAGE_SIZE, total, format_row, title="DATOS DE GOOGLE SHEETS")
+                PaginationPresenter.show_navigation_help()
+                cmd = input("Comando [n/p/f/q]: ").strip().lower()
+                if cmd == 'n' and end < total:
+                    page += 1
+                elif cmd == 'p' and page > 0:
+                    page -= 1
+                elif cmd == 'f':
+                    filtro = input("Filtrar por texto (dejar vacío para quitar filtro): ").strip() or None
+                    page = 0
+                elif cmd == 'q':
+                    break
+                else:
+                    print("Comando no reconocido o fuera de rango.")
+            except (ValueError, TypeError, KeyError) as e:
+                self.presenter.show_error(f"Error al obtener datos de Google Sheets: {e}")
+                break

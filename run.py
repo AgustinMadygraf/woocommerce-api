@@ -17,6 +17,7 @@ from src.shared.config import GOOGLE_CREDS_PATH, SPREADSHEET_ID, WORKSHEET_NAME
 from src.infrastructure.pymysql.product_persistence_gateway_impl import ProductPersistenceGatewayImpl
 from src.use_cases.list_local_products import ListLocalProductsUseCase
 from src.use_cases.update_local_products_from_sheets import UpdateLocalProductsFromSheetsUseCase
+from src.shared.logger import logger
 
 if __name__ == "__main__":
     if not os.path.isfile(GOOGLE_CREDS_PATH) or os.path.getsize(GOOGLE_CREDS_PATH) == 0:
@@ -46,4 +47,11 @@ if __name__ == "__main__":
         list_local_products_uc=list_local_products,
         update_local_products_from_sheets_uc=update_local_products_from_sheets
     )
-    controller.run()
+    try:
+        controller.run()
+    except (KeyboardInterrupt, SystemExit) as e:
+        logger.info("Ejecución interrumpida por el usuario o salida del sistema: %s", e)
+        print("\n[INFO] Ejecución interrumpida.")
+    except Exception as e:
+        logger.exception("Error fatal en la ejecución del CLI: %s", e)
+        print("\n[ERROR] Ocurrió un error inesperado. Revisa los logs para más detalles.")

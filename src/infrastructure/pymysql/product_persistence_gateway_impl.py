@@ -2,14 +2,14 @@
 Path: src/infrastructure/pymysql/product_persistence_gateway_impl.py
 """
 
-
-
 from typing import List, Any
 import pymysql
-from src.interface_adapters.gateways.product_persistence_gateway import ProductPersistenceGateway
-from src.interface_adapters.transformers.sheet_product_adapter import SheetProductAdapter
+
 from src.shared import config
 from src.shared.logger import logger
+
+from src.interface_adapters.gateways.product_persistence_gateway import ProductPersistenceGateway
+from src.infrastructure.google_sheets.sheet_product_adapter import SheetProductAdapter
 
 class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
     """Implementación de ProductPersistenceGateway usando PyMySQL para MySQL."""
@@ -94,7 +94,7 @@ class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
         except pymysql.err.OperationalError as e:
             logger.error("Error operacional al conectar o actualizar en MySQL: %s", e)
             raise
-        except Exception as e:
+        except (pymysql.MySQLError, ValueError) as e:
             logger.exception("Error inesperado al actualizar productos desde Sheets: %s", e)
             errores.append(str(e))
         return {"actualizados": updated, "insertados": inserted, "errores": errores}

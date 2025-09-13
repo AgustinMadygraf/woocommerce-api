@@ -1,12 +1,12 @@
+"""
+Path: src/interface_adapters/transformers/sheet_product_adapter.py
+"""
+
 class SheetProductAdapter:
+    "Transforma los datos de productos desde Google Sheets a un formato estándar."
     @staticmethod
     def transform(raw_values: list) -> list:
-        """
-        Transforma la estructura de la hoja actual al formato estándar requerido:
-        [id, name, sku, regular_price, stock_quantity, status, type]
-        Asume que los datos relevantes empiezan en la fila 4 (índice 3) y que las columnas son:
-        0: (vacío o índice), 1: (vacío), 2: name, 3: sku/color, 4: peso, 5: referencia/stock, 6: programa, 7: verificado
-        """
+        " Transforma los datos de productos desde Google Sheets a un formato estándar."
         transformed = []
         header = ["id", "name", "sku", "regular_price", "stock_quantity", "status", "type"]
         transformed.append(header)

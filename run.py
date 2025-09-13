@@ -16,9 +16,9 @@ from src.use_cases.list_sheet_values import ListSheetValuesUseCase
 from src.shared.config import GOOGLE_CREDS_PATH, SPREADSHEET_ID, WORKSHEET_NAME
 
 if __name__ == "__main__":
-    if not os.path.isfile(GOOGLE_CREDS_PATH):
-        print(f"[ERROR] Archivo de credenciales de Google no encontrado: {GOOGLE_CREDS_PATH}")
-        print("Por favor, revisa la variable GOOGLE_CREDS_PATH en tu .env o config.py.")
+    if not os.path.isfile(GOOGLE_CREDS_PATH) or os.path.getsize(GOOGLE_CREDS_PATH) == 0:
+        print(f"[ERROR] Archivo de credenciales de Google no encontrado o vacío: {GOOGLE_CREDS_PATH}")
+        print("Por favor, revisa la variable GOOGLE_CREDS_PATH en tu .env o config.py y asegúrate de que el archivo contiene las credenciales JSON válidas.")
         exit(1)
 
     gateway = WooCommerceProductGateway()

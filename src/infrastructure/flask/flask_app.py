@@ -1,9 +1,9 @@
 """
-Path: src/infrastructure/flask/app_flask.py
+Path: src/infrastructure/flask/flask_app.py
 """
 
-from flask import Flask, jsonify, send_from_directory
 import os
+from flask import Flask, jsonify, send_from_directory
 
 from src.shared import config
 
@@ -20,15 +20,21 @@ app = Flask(__name__, static_folder=static_folder)
 @app.route('/api/sheet-values')
 def api_sheet_values():
     "Endpoint que devuelve los valores de Google Sheets transformados para la tabla."
-    sheets_gateway = GoogleSheetsGateway(config.GOOGLE_CREDS_PATH)
-    use_case = ListSheetValuesUseCase(
-        sheets_gateway,
-        config.SPREADSHEET_ID,
-        config.WORKSHEET_NAME
-    )
-    raw_values = use_case.execute()
-    data = SheetProductAdapter.transform(raw_values)
-    return jsonify(data)
+    try:
+        sheets_gateway = GoogleSheetsGateway(config.GOOGLE_CREDS_PATH)
+        use_case = ListSheetValuesUseCase(
+            sheets_gateway,
+            config.SPREADSHEET_ID,
+            config.WORKSHEET_NAME
+        )
+        raw_values = use_case.execute()
+        data = SheetProductAdapter.transform(raw_values)
+        return jsonify(data)
+    except Exception as e:
+        import traceback
+        print("[ERROR] /api/sheet-values:", e)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/')
 def index():

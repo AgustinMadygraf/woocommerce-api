@@ -9,6 +9,10 @@ from flask import Flask, jsonify, send_from_directory
 from src.infrastructure.pymysql.product_persistence_gateway_impl import ProductPersistenceGatewayImpl
 from src.infrastructure.woocommerce.gateway_impl import WooCommerceProductGateway
 from src.use_cases.update_local_products_from_woocommerce import UpdateLocalProductsFromWooCommerceUseCase
+from src.infrastructure.google_sheets.sheets_gateway import GoogleSheetsGateway
+from src.use_cases.list_sheet_values import ListSheetValuesUseCase
+from src.use_cases.update_local_products_from_sheets import UpdateLocalProductsFromSheetsUseCase
+from src.shared.config import GOOGLE_CREDS_PATH, SPREADSHEET_ID, WORKSHEET_NAME
 
 # Get the project root directory (3 levels up from the current file)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -54,6 +58,28 @@ def api_sheet_values():
         print("[ERROR] /api/sheet-values: Error al procesar los datos:", e)
         traceback.print_exc()
         return jsonify({"error": "Error al procesar los datos de la base de datos MySQL. Contacta al administrador."}), 500
+
+@app.route('/api/update-from-sheets', methods=['POST'])
+def update_from_sheets():
+    """Endpoint para actualizar la base de datos local desde Google Sheets."""
+    try:
+        # Instanciar gateway de Google Sheets
+        sheets_gateway = GoogleSheetsGateway(GOOGLE_CREDS_PATH)
+        # Caso de uso para obtener valores de la hoja
+        list_sheet_values_uc = ListSheetValuesUseCase(sheets_gateway, SPREADSHEET_ID, WORKSHEET_NAME)
+        # Obtener los valores crudos de la hoja
+        values = list_sheet_values_uc.execute()
+        # Instanciar gateway de persistencia local
+        persistence_gateway = ProductPersistenceGatewayImpl()
+        # Caso de uso para actualizar productos locales
+        update_local_products_from_sheets_uc = UpdateLocalProductsFromSheetsUseCase(persistence_gateway)
+        # Actualizar productos locales desde los valores de Sheets
+        result = update_local_products_from_sheets_uc.execute(values)
+        return jsonify({"success": True, "message": "Actualización desde Google Sheets completada.", "result": result})
+    except (AttributeError, KeyError, TypeError, ValueError) as e:
+        print("[ERROR] /api/update-from-sheets:", e)
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/woocommerce-products')
 def api_woocommerce_products():

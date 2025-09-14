@@ -7,12 +7,28 @@ import traceback
 from flask import Flask, jsonify, send_from_directory
 
 from src.infrastructure.pymysql.product_persistence_gateway_impl import ProductPersistenceGatewayImpl
+from src.infrastructure.woocommerce.gateway_impl import WooCommerceProductGateway
+from src.use_cases.update_local_products_from_woocommerce import UpdateLocalProductsFromWooCommerceUseCase
 
 # Get the project root directory (3 levels up from the current file)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 static_folder = os.path.join(project_root, 'static')
 
 app = Flask(__name__, static_folder=static_folder)
+
+@app.route('/api/update-from-woocommerce', methods=['POST'])
+def update_from_woocommerce():
+    """Endpoint para actualizar la base de datos local desde WooCommerce."""
+    try:
+        woocommerce_gateway = WooCommerceProductGateway()
+        persistence_gateway = ProductPersistenceGatewayImpl()
+        use_case = UpdateLocalProductsFromWooCommerceUseCase(woocommerce_gateway, persistence_gateway)
+        result = use_case.execute()
+        return jsonify({"success": True, "message": "Actualización desde WooCommerce completada.", "result": result})
+    except (AttributeError, KeyError, TypeError, ValueError) as e:
+        print("[ERROR] /api/update-from-woocommerce:", e)
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 @app.route('/api/sheet-values')
 def api_sheet_values():

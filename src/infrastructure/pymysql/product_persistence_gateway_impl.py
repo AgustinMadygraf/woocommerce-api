@@ -77,27 +77,17 @@ class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
             data_rows = transformed_values[1:]
             
             # Adaptar los nombres de columnas para la nueva estructura
-            # Deberás modificar este código según la transformación que hace SheetProductAdapter
-            required_cols = ["formato", "color", "stock_quantity"]
-            # Mapeamos los encabezados antiguos a los nuevos
-            header_mapping = {
-                "name": "formato",
-                "sku": "color",
-                "stock_quantity": "stock_quantity"
-            }
-            
-            # Crear un mapeo entre los encabezados de los datos transformados y los requeridos
-            col_idx = {}
-            for old_header, new_header in header_mapping.items():
-                if old_header in headers:
-                    col_idx[new_header] = headers.index(old_header)
-            
-            missing = [col for col in required_cols if col not in col_idx]
+
+            # Ajuste: aceptar directamente los encabezados entregados por el adaptador
+            required_cols = ["formato", "color", "gramaje", "stock_quantity"]
+            missing = [col for col in required_cols if col not in headers]
             if missing:
                 msg = f"Faltan columnas requeridas tras la transformación: {missing}. Encabezados encontrados: {headers}"
                 logger.error(msg)
                 return {"actualizados": 0, "insertados": 0, "errores": [msg]}
 
+            # Mapear índices de columnas
+            col_idx = {col: headers.index(col) for col in required_cols}
             with pymysql.connect(**self.connection_params) as conn:
                 with conn.cursor() as cursor:
                     # Limpiamos la tabla antes de insertar nuevos datos
@@ -113,14 +103,14 @@ class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
                             # Mapeamos los datos según la nueva estructura
                             formato = row[col_idx["formato"]]
                             color = row[col_idx["color"]]
+                            gramaje = row[col_idx["gramaje"]]
                             stock_quantity = row[col_idx["stock_quantity"]]
-                            
                             cursor.execute("""
-                                INSERT INTO products_google_sheets (formato, color, stock_quantity)
-                                VALUES (%s, %s, %s)
-                            """, (formato, color, stock_quantity))
+                                INSERT INTO products_google_sheets (formato, color, gramaje, stock_quantity)
+                                VALUES (%s, %s, %s, %s)
+                            """, (formato, color, gramaje, stock_quantity))
                             inserted += 1
-                            logger.debug("Producto de Google Sheets insertado: formato=%s, color=%s", formato, color)
+                            logger.debug("Producto de Google Sheets insertado: formato=%s, color=%s, gramaje=%s", formato, color, gramaje)
                         except (pymysql.MySQLError, ValueError) as row_e:
                             logger.error("Error al procesar fila %s: %s", row, row_e)
                             errores.append(f"Error en fila: {row}: {str(row_e)}")

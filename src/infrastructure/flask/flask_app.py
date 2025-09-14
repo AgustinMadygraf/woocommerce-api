@@ -3,6 +3,7 @@ Path: src/infrastructure/flask/flask_app.py
 """
 
 import os
+import traceback
 from flask import Flask, jsonify, send_from_directory
 
 from src.shared import config
@@ -30,11 +31,18 @@ def api_sheet_values():
         raw_values = use_case.execute()
         data = SheetProductAdapter.transform(raw_values)
         return jsonify(data)
-    except Exception as e:
-        import traceback
-        print("[ERROR] /api/sheet-values:", e)
+    except FileNotFoundError as e:
+        print("[ERROR] /api/sheet-values: Archivo de credenciales no encontrado:", e)
         traceback.print_exc()
-        return jsonify({"error": str(e)}), 500
+        return jsonify({"error": "Archivo de credenciales de Google no encontrado. Contacta al administrador."}), 500
+    except ValueError as e:
+        print("[ERROR] /api/sheet-values: Valor inválido:", e)
+        traceback.print_exc()
+        return jsonify({"error": "Valor inválido recibido o procesado. Contacta al administrador."}), 400
+    except (ConnectionError, TimeoutError) as e:
+        print("[ERROR] /api/sheet-values: Error de conexión o tiempo de espera:", e)
+        traceback.print_exc()
+        return jsonify({"error": "Error de conexión con Google Sheets. Contacta al administrador."}), 502
 
 @app.route('/')
 def index():

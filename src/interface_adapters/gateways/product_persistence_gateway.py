@@ -16,3 +16,8 @@ class ProductPersistenceGateway(ABC):
     def update_products_from_sheet(self, values: list) -> dict:
         "Actualiza o inserta productos en la base local a partir de datos de Google Sheets. Devuelve un resumen de la operación."
         pass # pylint: disable=unnecessary-pass
+
+    @abstractmethod
+    def update_products_from_woocommerce(self, values: list) -> dict:
+        "Actualiza o inserta productos en la base local a partir de datos de WooCommerce. Devuelve un resumen de la operación."
+        pass # pylint: disable=unnecessary-pass

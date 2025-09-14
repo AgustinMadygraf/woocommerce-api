@@ -2,13 +2,15 @@
 Path: src/interface_adapters/controllers/cli_controller.py
 """
 
+import traceback
+
 from src.interface_adapters.presenters.input_validator import is_valid_float, is_valid_int
 from src.interface_adapters.presenters.pagination_presenter import PaginationPresenter
 from src.interface_adapters.presenters.cli_style import cyan, green, yellow, red
 
 class CLIController:
     """Controlador CLI centralizado para la interacción con el usuario."""
-    def __init__(self, list_products_uc, get_product_by_id_uc, create_product_uc, update_product_uc, presenter, list_sheet_values_uc=None, list_local_products_uc=None, update_local_products_from_sheets_uc=None):
+    def __init__(self, list_products_uc, get_product_by_id_uc, create_product_uc, update_product_uc, presenter, list_sheet_values_uc=None, list_local_products_uc=None, update_local_products_from_sheets_uc=None, update_local_products_from_woocommerce_uc=None):
         self.list_products_uc = list_products_uc
         self.get_product_by_id_uc = get_product_by_id_uc
         self.create_product_uc = create_product_uc
@@ -17,6 +19,7 @@ class CLIController:
         self.list_sheet_values_uc = list_sheet_values_uc
         self.list_local_products_uc = list_local_products_uc
         self.update_local_products_from_sheets_uc = update_local_products_from_sheets_uc
+        self.update_local_products_from_woocommerce_uc = update_local_products_from_woocommerce_uc
 
     def run(self):
         """Bucle principal de interacción CLI con menú de opciones mejorado."""
@@ -32,10 +35,15 @@ class CLIController:
                 print("4. Mostrar datos de Google Sheets")
                 print("5. Visualizar productos locales (MySQL)")
                 print("6. Actualizar productos locales desde Google Sheets (MySQL)")
+                if self.update_local_products_from_woocommerce_uc:
+                    print("7. Actualizar productos locales desde WooCommerce (MySQL)")
                 print("0. Salir")
                 print("-" * 40)
-                opcion = input("Seleccione una opción (0-6): ").strip()
-                if opcion not in {"0", "1", "2", "3", "4", "5", "6"}:
+                opciones_validas = {"0", "1", "2", "3", "4", "5", "6"}
+                if self.update_local_products_from_woocommerce_uc:
+                    opciones_validas.add("7")
+                opcion = input(f"Seleccione una opción (0-{max(opciones_validas)}): ").strip()
+                if opcion not in opciones_validas:
                     self.presenter.show_message("\n[!] Opción no válida. Intente de nuevo.")
                     input("Presione Enter para continuar...")
                     continue
@@ -51,6 +59,8 @@ class CLIController:
                     self._visualizar_productos_locales()
                 elif opcion == "6":
                     self._actualizar_productos_locales_desde_sheets()
+                elif opcion == "7" and self.update_local_products_from_woocommerce_uc:
+                    self._actualizar_productos_locales_desde_woocommerce()
                 elif opcion == "0":
                     self.presenter.show_message("\nSaliendo del sistema. ¡Hasta luego!")
                     break
@@ -264,7 +274,14 @@ class CLIController:
             self.presenter.show_message(f"Error al actualizar la base local: {e}")
         except RuntimeError as e:
             self.presenter.show_message(f"Error inesperado al actualizar la base local: {e}")
-        except Exception as e:
-            # Depuración extra para errores no previstos
-            import traceback
+            self.presenter.show_error(f"Error crítico: {e}\n{traceback.format_exc()}")
+
+    def _actualizar_productos_locales_desde_woocommerce(self):
+        """Actualiza la base de datos local (MySQL) con los datos de WooCommerce."""
+        try:
+            resultado = self.update_local_products_from_woocommerce_uc.execute()
+            if resultado.get("errores"):
+                self.presenter.show_error(f"Errores durante la actualización: {resultado['errores']}")
+            self.presenter.show_message(f"Productos actualizados: {resultado.get('actualizados', 0)} | insertados: {resultado.get('insertados', 0)}")
+        except (ValueError, TypeError, KeyError, RuntimeError) as e:
             self.presenter.show_error(f"Error crítico: {e}\n{traceback.format_exc()}")

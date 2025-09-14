@@ -124,3 +124,72 @@ class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
             logger.exception("Error inesperado al actualizar productos desde Sheets: %s", e)
             errores.append(str(e))
         return {"actualizados": updated, "insertados": inserted, "errores": errores}
+
+    def update_products_from_woocommerce(self, values: list) -> dict:
+        """Actualiza la tabla local products_woocommerce con datos de WooCommerce."""
+        logger.debug("Iniciando actualización de productos desde WooCommerce a MySQL.")
+        updated, inserted, errores = 0, 0, []
+        try:
+            if not values or len(values) < 2:
+                logger.warning("No hay datos suficientes para actualizar desde WooCommerce.")
+                return {"actualizados": 0, "insertados": 0, "errores": ["No hay datos suficientes."]}
+
+            headers = values[0]
+            data_rows = values[1:]
+            
+            # Verificar columnas requeridas
+            required_cols = ["id", "name", "sku", "regular_price", "stock_quantity", "status", "type"]
+            missing = [col for col in required_cols if col not in headers]
+            if missing:
+                msg = f"Faltan columnas requeridas para WooCommerce: {missing}. Encabezados encontrados: {headers}"
+                logger.error(msg)
+                return {"actualizados": 0, "insertados": 0, "errores": [msg]}
+
+            # Mapear índices de columnas
+            col_idx = {col: headers.index(col) for col in required_cols}
+            
+            with pymysql.connect(**self.connection_params) as conn:
+                with conn.cursor() as cursor:
+                    # Eliminamos los registros existentes
+                    cursor.execute("TRUNCATE TABLE products_woocommerce")
+                    logger.info("Tabla products_woocommerce limpiada para nuevos datos")
+                    
+                    for row in data_rows:
+                        if len(row) < len(headers):
+                            logger.warning("Fila incompleta ignorada: %s", row)
+                            continue
+                            
+                        try:
+                            # Extraemos los valores necesarios
+                            product_id = row[col_idx["id"]]
+                            name = row[col_idx["name"]]
+                            sku = row[col_idx["sku"]]
+                            regular_price = row[col_idx["regular_price"]]
+                            stock_quantity = row[col_idx["stock_quantity"]]
+                            status = row[col_idx["status"]]
+                            product_type = row[col_idx["type"]]
+                            
+                            cursor.execute("""
+                                INSERT INTO products_woocommerce 
+                                (id, name, sku, regular_price, stock_quantity, status, type)
+                                VALUES (%s, %s, %s, %s, %s, %s, %s)
+                            """, (product_id, name, sku, regular_price, stock_quantity, status, product_type))
+                            inserted += 1
+                            logger.debug("Producto de WooCommerce insertado: id=%s, name=%s, sku=%s", 
+                                         product_id, name, sku)
+                        except (pymysql.MySQLError, ValueError, TypeError) as row_e:
+                            logger.error("Error al procesar fila %s: %s", row, row_e)
+                            errores.append(f"Error en fila: {row}: {str(row_e)}")
+                    
+                    conn.commit()
+            
+            logger.info("Actualización desde WooCommerce completada. Insertados: %d", inserted)
+            return {"actualizados": updated, "insertados": inserted, "errores": errores}
+        except pymysql.err.OperationalError as e:
+            logger.error("Error operacional al conectar o actualizar en MySQL: %s", e)
+            errores.append(f"Error operacional: {str(e)}")
+        except (pymysql.MySQLError, ValueError, TypeError) as e:
+            logger.exception("Error inesperado al actualizar productos desde WooCommerce: %s", e)
+            errores.append(str(e))
+        
+        return {"actualizados": updated, "insertados": inserted, "errores": errores}

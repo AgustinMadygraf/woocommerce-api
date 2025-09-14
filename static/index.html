@@ -21,13 +21,19 @@
     </ul>
     <div class="tab-content" id="dataTabsContent">
       <div class="tab-pane fade show active" id="sheet" role="tabpanel" aria-labelledby="sheet-tab">
-        <h2 class="mb-4">Datos de Google Sheets</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="mb-0">Datos de Google Sheets</h2>
+          <button id="update-sheets-btn" class="btn btn-primary">Actualizar base de datos desde Google Sheets</button>
+        </div>
         <div id="sheet-table-container">
           <!-- La tabla se llenará dinámicamente -->
         </div>
       </div>
       <div class="tab-pane fade" id="woo" role="tabpanel" aria-labelledby="woo-tab">
-        <h2 class="mb-4">Productos WooCommerce</h2>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2 class="mb-0">Productos WooCommerce</h2>
+          <button id="update-woo-btn" class="btn btn-primary">Actualizar base de datos desde WooCommerce</button>
+        </div>
         <div id="woo-table-container">
           <!-- La tabla WooCommerce se llenará dinámicamente -->
         </div>

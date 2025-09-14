@@ -6,11 +6,7 @@ import os
 import traceback
 from flask import Flask, jsonify, send_from_directory
 
-from src.shared import config
-
-from src.infrastructure.google_sheets.sheets_gateway import GoogleSheetsGateway
-from src.infrastructure.google_sheets.sheet_product_adapter import SheetProductAdapter
-from src.use_cases.list_sheet_values import ListSheetValuesUseCase
+from src.infrastructure.pymysql.product_persistence_gateway_impl import ProductPersistenceGatewayImpl
 
 # Get the project root directory (3 levels up from the current file)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
@@ -20,29 +16,28 @@ app = Flask(__name__, static_folder=static_folder)
 
 @app.route('/api/sheet-values')
 def api_sheet_values():
-    "Endpoint que devuelve los valores de Google Sheets transformados para la tabla."
+    "Endpoint que devuelve los valores de productos desde MySQL para la tabla."
     try:
-        sheets_gateway = GoogleSheetsGateway(config.GOOGLE_CREDS_PATH)
-        use_case = ListSheetValuesUseCase(
-            sheets_gateway,
-            config.SPREADSHEET_ID,
-            config.WORKSHEET_NAME
-        )
-        raw_values = use_case.execute()
-        data = SheetProductAdapter.transform(raw_values)
+        mysql_gateway = ProductPersistenceGatewayImpl()
+        productos = mysql_gateway.list_google_sheet_products()
+        # Opcional: transformar a formato de tabla si es necesario
+        if not productos:
+            return jsonify([])
+        # Encabezados
+        headers = ["id_google_sheets", "formato", "color", "stock_quantity"]
+        data = [headers]
+        for prod in productos:
+            data.append([
+                prod.get("id_google_sheets"),
+                prod.get("formato"),
+                prod.get("color"),
+                prod.get("stock_quantity"),
+            ])
         return jsonify(data)
-    except FileNotFoundError as e:
-        print("[ERROR] /api/sheet-values: Archivo de credenciales no encontrado:", e)
+    except (AttributeError, KeyError, TypeError) as e:
+        print("[ERROR] /api/sheet-values: Error al procesar los datos:", e)
         traceback.print_exc()
-        return jsonify({"error": "Archivo de credenciales de Google no encontrado. Contacta al administrador."}), 500
-    except ValueError as e:
-        print("[ERROR] /api/sheet-values: Valor inválido:", e)
-        traceback.print_exc()
-        return jsonify({"error": "Valor inválido recibido o procesado. Contacta al administrador."}), 400
-    except (ConnectionError, TimeoutError) as e:
-        print("[ERROR] /api/sheet-values: Error de conexión o tiempo de espera:", e)
-        traceback.print_exc()
-        return jsonify({"error": "Error de conexión con Google Sheets. Contacta al administrador."}), 502
+        return jsonify({"error": "Error al procesar los datos de la base de datos MySQL. Contacta al administrador."}), 500
 
 @app.route('/')
 def index():

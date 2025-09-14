@@ -24,7 +24,7 @@ from src.shared.logger import logger
 if __name__ == "__main__":
     if "--flask" in sys.argv:
         # Importa aquí para evitar dependencias innecesarias si no se usa Flask
-        from src.infrastructure.flask.flask_app import app
+        from src.infrastructure.flask.app_flask import app
         app.run(host="0.0.0.0", port=5000, debug=True)
         sys.exit(0)
 

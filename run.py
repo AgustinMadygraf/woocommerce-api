@@ -3,6 +3,7 @@ Path: run.py
 """
 
 import os
+import sys
 
 from src.infrastructure.woocommerce.gateway_impl import WooCommerceProductGateway
 from src.interface_adapters.presenters.product_presenter import ProductPresenter
@@ -21,6 +22,12 @@ from src.use_cases.update_local_products_from_woocommerce import UpdateLocalProd
 from src.shared.logger import logger
 
 if __name__ == "__main__":
+    if "--flask" in sys.argv:
+        # Importa aquí para evitar dependencias innecesarias si no se usa Flask
+        from src.infrastructure.flask.flaskk_app import app
+        app.run(host="0.0.0.0", port=5000, debug=True)
+        sys.exit(0)
+
     if not os.path.isfile(GOOGLE_CREDS_PATH) or os.path.getsize(GOOGLE_CREDS_PATH) == 0:
         print(f"[ERROR] Archivo de credenciales de Google no encontrado o vacío: {GOOGLE_CREDS_PATH}")
         print("Por favor, revisa la variable GOOGLE_CREDS_PATH en tu .env o config.py y asegúrate de que el archivo contiene las credenciales JSON válidas.")

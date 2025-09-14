@@ -3,7 +3,21 @@ Path: static/js/main.js
 */
 
 fetch('/api/sheet-values')
-  .then(res => res.json())
+  .then(async res => {
+    if (!res.ok) {
+      // Intenta extraer el mensaje de error del backend
+      let errorMsg = 'Error al cargar los datos.';
+      try {
+        const errJson = await res.json();
+        if (errJson && errJson.error) errorMsg = errJson.error;
+      } catch (e) {
+        // No es JSON, usa el status
+        errorMsg = `Error ${res.status}: ${res.statusText}`;
+      }
+      throw new Error(errorMsg);
+    }
+    return res.json();
+  })
   .then(data => {
     if (!data || data.length === 0) {
       document.getElementById('sheet-table-container').innerHTML = '<div class="alert alert-warning">No hay datos para mostrar.</div>';
@@ -24,5 +38,6 @@ fetch('/api/sheet-values')
     document.getElementById('sheet-table-container').innerHTML = html;
   })
   .catch(err => {
-    document.getElementById('sheet-table-container').innerHTML = '<div class="alert alert-danger">Error al cargar los datos.</div>';
+    document.getElementById('sheet-table-container').innerHTML = `<div class="alert alert-danger">${err.message}</div>`;
+    console.error('[API ERROR]', err);
   });

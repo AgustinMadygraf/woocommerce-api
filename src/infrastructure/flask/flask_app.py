@@ -39,6 +39,33 @@ def api_sheet_values():
         traceback.print_exc()
         return jsonify({"error": "Error al procesar los datos de la base de datos MySQL. Contacta al administrador."}), 500
 
+@app.route('/api/woocommerce-products')
+def api_woocommerce_products():
+    "Endpoint que devuelve los productos WooCommerce almacenados en MySQL."
+    try:
+        mysql_gateway = ProductPersistenceGatewayImpl()
+        productos = mysql_gateway.list_products()
+        if not productos:
+            return jsonify([])
+        # Encabezados
+        headers = ["id", "name", "sku", "regular_price", "stock_quantity", "status", "type"]
+        data = [headers]
+        for prod in productos:
+            data.append([
+                prod.get("id"),
+                prod.get("name"),
+                prod.get("sku"),
+                prod.get("regular_price"),
+                prod.get("stock_quantity"),
+                prod.get("status"),
+                prod.get("type"),
+            ])
+        return jsonify(data)
+    except (AttributeError, KeyError, TypeError) as e:
+        print("[ERROR] /api/woocommerce-products: Error al procesar los datos:", e)
+        traceback.print_exc()
+        return jsonify({"error": "Error al procesar los datos de la base de datos MySQL. Contacta al administrador."}), 500
+
 @app.route('/')
 def index():
     "Sirve el archivo index.html desde el directorio static."

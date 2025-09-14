@@ -1,4 +1,7 @@
-// interface_adapters/controller/SheetController.js
+/*
+Path: interface_adapters/controller/SheetController.js
+*/
+
 import SheetApiGateway from '../gateways/SheetApiGateway.js';
 import SheetTablePresenter from '../presenters/SheetTablePresenter.js';
 

@@ -10,33 +10,28 @@
 </head>
 <body>
 
-  <!-- Navbar -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container">
-      <a class="navbar-brand" href="#">Inicio</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Sheet</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Productos</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="#">Configuración</a>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
   <div class="container my-5">
-    <h2 class="mb-4">Datos de Google Sheets</h2>
-    <div id="sheet-table-container">
-      <!-- La tabla se llenará dinámicamente -->
+    <ul class="nav nav-tabs mb-3" id="dataTabs" role="tablist">
+      <li class="nav-item" role="presentation">
+        <button class="nav-link active" id="sheet-tab" data-bs-toggle="tab" data-bs-target="#sheet" type="button" role="tab" aria-controls="sheet" aria-selected="true">Google Sheets</button>
+      </li>
+      <li class="nav-item" role="presentation">
+        <button class="nav-link" id="woo-tab" data-bs-toggle="tab" data-bs-target="#woo" type="button" role="tab" aria-controls="woo" aria-selected="false">WooCommerce</button>
+      </li>
+    </ul>
+    <div class="tab-content" id="dataTabsContent">
+      <div class="tab-pane fade show active" id="sheet" role="tabpanel" aria-labelledby="sheet-tab">
+        <h2 class="mb-4">Datos de Google Sheets</h2>
+        <div id="sheet-table-container">
+          <!-- La tabla se llenará dinámicamente -->
+        </div>
+      </div>
+      <div class="tab-pane fade" id="woo" role="tabpanel" aria-labelledby="woo-tab">
+        <h2 class="mb-4">Productos WooCommerce</h2>
+        <div id="woo-table-container">
+          <!-- La tabla WooCommerce se llenará dinámicamente -->
+        </div>
+      </div>
     </div>
   </div>
 
@@ -48,5 +43,6 @@
   </footer>
 
   <script type="module" src="/static/js/main.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

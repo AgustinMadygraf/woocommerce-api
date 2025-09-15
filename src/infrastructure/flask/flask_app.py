@@ -4,10 +4,12 @@ Path: src/infrastructure/flask/flask_app.py
 
 import os
 import traceback
+
 from flask import Flask, jsonify, send_from_directory
 
 from src.infrastructure.pymysql.product_persistence_gateway_impl import ProductPersistenceGatewayImpl
 from src.infrastructure.woocommerce.gateway_impl import WooCommerceProductGateway
+from src.interface_adapters.presenter.sheet_products_presenter import SheetProductsPresenter
 from src.use_cases.update_local_products_from_woocommerce import UpdateLocalProductsFromWooCommerceUseCase
 from src.infrastructure.google_sheets.sheets_gateway import GoogleSheetsGateway
 from src.use_cases.list_sheet_values import ListSheetValuesUseCase
@@ -36,24 +38,28 @@ def update_from_woocommerce():
 
 @app.route('/api/sheet-values')
 def api_sheet_values():
-    "Endpoint que devuelve los valores de productos desde MySQL para la tabla."
+    "Endpoint que devuelve los valores de productos desde MySQL para la tabla, ordenados por stock_quantity de mayor a menor."
     try:
         mysql_gateway = ProductPersistenceGatewayImpl()
         productos = mysql_gateway.list_google_sheet_products()
-        # Opcional: transformar a formato de tabla si es necesario
         if not productos:
             return jsonify([])
-        # Encabezados
+        # Encabezados y datos
         headers = ["id_google_sheets", "formato", "color", "stock_quantity"]
-        data = [headers]
-        for prod in productos:
-            data.append([
+        data = [
+            [
                 prod.get("id_google_sheets"),
                 prod.get("formato"),
                 prod.get("color"),
                 prod.get("stock_quantity"),
-            ])
-        return jsonify(data)
+            ]
+            for prod in productos
+        ]
+        # Insertar encabezado al inicio
+        data_with_header = [headers] + data
+        # Usar el presentador para ordenar
+        presented = SheetProductsPresenter.present(data_with_header)
+        return jsonify(presented)
     except (AttributeError, KeyError, TypeError) as e:
         print("[ERROR] /api/sheet-values: Error al procesar los datos:", e)
         traceback.print_exc()

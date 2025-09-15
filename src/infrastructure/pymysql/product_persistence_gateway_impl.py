@@ -8,7 +8,7 @@ import pymysql
 from src.shared.config import MYSQL_CONFIG
 from src.shared.logger import logger
 from src.interface_adapters.gateways.product_persistence_gateway import ProductPersistenceGateway
-from src.interface_adapters.presenter.sheet_product_adapter import SheetProductAdapter
+from src.infrastructure.google_sheets.sheet_product_adapter import SheetProductAdapter
 
 class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
     """Implementación de ProductPersistenceGateway usando PyMySQL para MySQL."""
@@ -48,7 +48,7 @@ class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
         try:
             with pymysql.connect(**self.connection_params) as conn:
                 with conn.cursor() as cursor:
-                    cursor.execute("SELECT id_google_sheets, formato, color, stock_quantity FROM products_google_sheets")
+                    cursor.execute("SELECT id_google_sheets, formato, color, gramaje, stock_quantity FROM products_google_sheets")
                     productos = cursor.fetchall()
                     logger.info("Productos Google Sheets recuperados: %d", len(productos))
                     return productos

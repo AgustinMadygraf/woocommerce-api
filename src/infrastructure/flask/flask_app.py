@@ -44,13 +44,14 @@ def api_sheet_values():
         productos = mysql_gateway.list_google_sheet_products()
         if not productos:
             return jsonify([])
-        # Encabezados y datos
-        headers = ["id_google_sheets", "formato", "color", "stock_quantity"]
+        # Encabezados y datos (ahora incluye 'gramaje')
+        headers = ["id_google_sheets", "formato", "color", "gramaje", "stock_quantity"]
         data = [
             [
                 prod.get("id_google_sheets"),
                 prod.get("formato"),
                 prod.get("color"),
+                prod.get("gramaje"),
                 prod.get("stock_quantity"),
             ]
             for prod in productos

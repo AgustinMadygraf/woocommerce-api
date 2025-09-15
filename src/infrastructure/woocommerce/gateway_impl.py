@@ -10,7 +10,7 @@ import requests
 from src.shared.config import URL, CK, CS
 from src.shared.logger import logger
 
-from src.interface_adapters.gateways.base_product_gateway import BaseProductGateway
+from src.entities.base_product_gateway import BaseProductGateway
 
 class WooCommerceProductGateway(BaseProductGateway):
     "Implementación concreta del gateway de productos usando WooCommerce API."

@@ -1,5 +1,5 @@
 """
-Script para inicializar la base de datos MySQL y las tablas 'products_google_sheets' y 'products_woocommerce' si no existen.
+Path: src/infrastructure/pymysql/init_db.py
 """
 
 import pymysql

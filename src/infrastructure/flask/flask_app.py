@@ -14,11 +14,11 @@ from src.use_cases.update_local_products_from_woocommerce import UpdateLocalProd
 from src.infrastructure.google_sheets.sheets_gateway import GoogleSheetsGateway
 from src.use_cases.list_sheet_values import ListSheetValuesUseCase
 from src.use_cases.update_local_products_from_sheets import UpdateLocalProductsFromSheetsUseCase
-from src.shared.config import GOOGLE_CREDS_PATH, SPREADSHEET_ID, WORKSHEET_NAME
+from src.shared.config import GOOGLE_CREDS_PATH, SPREADSHEET_ID, WORKSHEET_NAME, STATIC_FOLDER
 
 # Get the project root directory (3 levels up from the current file)
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
-static_folder = os.path.join(project_root, 'static')
+static_folder = os.path.join(project_root, STATIC_FOLDER)
 
 app = Flask(__name__, static_folder=static_folder)
 

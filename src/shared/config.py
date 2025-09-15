@@ -15,6 +15,8 @@ GOOGLE_CREDS_PATH = os.getenv("GOOGLE_CREDS_PATH")
 SPREADSHEET_ID = os.getenv("SPREADSHEET_ID")
 WORKSHEET_NAME = os.getenv("WORKSHEET_NAME")
 
+STATIC_FOLDER = os.getenv("STATIC_FOLDER", "static")  # Valor por defecto: 'static'
+
 # Credenciales de MySQL
 MYSQL_CONFIG = {
     "host": os.getenv("MYSQL_HOST"),

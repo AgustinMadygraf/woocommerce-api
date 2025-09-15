@@ -1,7 +1,7 @@
 """
 Caso de uso: Actualizar productos locales desde WooCommerce
 """
-from src.infrastructure.woocommerce.woocommerce_product_adapter import WooCommerceProductAdapter
+from src.interface_adapters.presenter.woocommerce_product_adapter import WooCommerceProductAdapter
 
 class UpdateLocalProductsFromWooCommerceUseCase:
     " Use case para actualizar productos locales desde WooCommerce. "

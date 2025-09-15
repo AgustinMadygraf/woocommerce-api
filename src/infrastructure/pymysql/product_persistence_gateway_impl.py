@@ -8,7 +8,7 @@ import pymysql
 from src.shared.config import MYSQL_CONFIG
 from src.shared.logger import logger
 from src.interface_adapters.gateways.product_persistence_gateway import ProductPersistenceGateway
-from src.infrastructure.google_sheets.sheet_product_adapter import SheetProductAdapter
+from src.interface_adapters.presenter.sheet_product_adapter import SheetProductAdapter
 
 class ProductPersistenceGatewayImpl(ProductPersistenceGateway):
     """Implementación de ProductPersistenceGateway usando PyMySQL para MySQL."""

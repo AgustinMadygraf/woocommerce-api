@@ -8,7 +8,7 @@ import traceback
 from flask import Flask, jsonify, send_from_directory
 
 from src.infrastructure.pymysql.product_persistence_gateway_impl import ProductPersistenceGatewayImpl
-from src.infrastructure.woocommerce.gateway_impl import WooCommerceProductGateway
+from src.infrastructure.woocommerce.woocommerce_product_gateway_impl import WooCommerceProductGateway
 from src.interface_adapters.presenter.sheet_products_presenter import SheetProductsPresenter
 from src.use_cases.update_local_products_from_woocommerce import UpdateLocalProductsFromWooCommerceUseCase
 from src.infrastructure.google_sheets.sheets_gateway import GoogleSheetsGateway

@@ -3,15 +3,15 @@
     "target": "ES6",
     "module": "ESNext",
     "moduleResolution": "Node",
-    "outDir": "./js/dist",
-    "rootDir": "./js",
+    "outDir": "./src/dist",
+    "rootDir": "./src",
     "strict": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },
   "include": [
-    "js/**/*.ts"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

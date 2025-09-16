@@ -2,8 +2,8 @@ import { ISheetController } from './interface_adapters/controllers/ISheetControl
 import { IWoocommerceController } from './interface_adapters/controllers/IWoocommerceController';
 
 // Import actual implementations
-import SheetController from './interface_adapters/controllers/SheetController';
-import WoocommerceController from './interface_adapters/controllers/WoocommerceController';
+import SheetController from './interface_adapters/controllers/SheetController.js';
+import WoocommerceController from './interface_adapters/controllers/WoocommerceController.js';
 
 document.addEventListener('DOMContentLoaded', () => {
   const sheetController: ISheetController = new SheetController();

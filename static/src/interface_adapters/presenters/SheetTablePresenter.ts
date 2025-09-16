@@ -1,9 +1,16 @@
-// interface_adapters/presenters/WoocommerceTablePresenter.js
+/*
+Path: static/src/interface_adapters/presenters/SheetTablePresenter.ts
+*/
 
-export default class WoocommerceTablePresenter {
-  present(data) {
+import { ISheetTablePresenter } from './ISheetTablePresenter';
+
+/**
+ * Presents sheet data as an HTML table
+ */
+export default class SheetTablePresenter implements ISheetTablePresenter {
+  present(data: string[][]): string {
     if (!data || data.length === 0) {
-      return '<div class="alert alert-warning">No hay productos WooCommerce para mostrar.</div>';
+      return '<div class="alert alert-warning">No hay datos para mostrar.</div>';
     }
     let html = '<table class="table table-bordered table-striped">';
     // Encabezados

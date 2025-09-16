@@ -1,0 +1,135 @@
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+// Import actual implementations
+import SheetController from './interface_adapters/controllers/SheetController.js';
+import WoocommerceController from './interface_adapters/controllers/WoocommerceController.js';
+document.addEventListener('DOMContentLoaded', () => {
+    const sheetController = new SheetController();
+    const wooController = new WoocommerceController();
+    // Render inicial (Google Sheets)
+    sheetController.renderSheetTable('sheet-table-container');
+    // Tab switching
+    const sheetTab = document.getElementById('sheet-tab');
+    const wooTab = document.getElementById('woo-tab');
+    sheetTab === null || sheetTab === void 0 ? void 0 : sheetTab.addEventListener('click', () => {
+        sheetController.renderSheetTable('sheet-table-container');
+    });
+    wooTab === null || wooTab === void 0 ? void 0 : wooTab.addEventListener('click', () => {
+        wooController.renderWoocommerceTable('woo-table-container');
+    });
+    // Botón actualizar Google Sheets
+    const updateSheetsBtn = document.getElementById('update-sheets-btn');
+    if (updateSheetsBtn) {
+        updateSheetsBtn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+            console.info('[ACTUALIZACIÓN SHEETS] Botón presionado');
+            if (updateSheetsBtn instanceof HTMLButtonElement) {
+                updateSheetsBtn.disabled = true;
+                updateSheetsBtn.textContent = 'Actualizando...';
+            }
+            let msg;
+            try {
+                try {
+                    console.log('[ACTUALIZACIÓN SHEETS] Iniciando fetch real...');
+                    const res = yield fetch('/api/update-from-sheets', { method: 'POST' });
+                    if (!res.ok) {
+                        let errorMsg = 'Error al actualizar desde Google Sheets.';
+                        try {
+                            const errJson = yield res.json();
+                            if (errJson && errJson.error)
+                                errorMsg = errJson.error;
+                        }
+                        catch (e) {
+                            errorMsg = `Error ${res.status}: ${res.statusText}`;
+                        }
+                        throw new Error(errorMsg);
+                    }
+                    msg = '<div class="alert alert-success mt-2">Actualización desde Google Sheets completada con éxito.</div>';
+                    console.info('[ACTUALIZACIÓN SHEETS] Actualización exitosa');
+                }
+                catch (fetchErr) {
+                    console.error('[ACTUALIZACIÓN SHEETS] Error en fetch:', fetchErr);
+                    msg = `<div class="alert alert-danger mt-2">${fetchErr instanceof Error ? fetchErr.message : 'Error al actualizar desde Google Sheets.'}</div>`;
+                }
+                try {
+                    const container = document.getElementById('sheet-table-container');
+                    container === null || container === void 0 ? void 0 : container.insertAdjacentHTML('beforebegin', msg);
+                    console.log('[ACTUALIZACIÓN SHEETS] Mensaje mostrado al usuario');
+                }
+                catch (domErr) {
+                    console.warn('[ACTUALIZACIÓN SHEETS] Error al actualizar el DOM:', domErr);
+                }
+            }
+            catch (err) {
+                console.error('[ACTUALIZACIÓN SHEETS] Error inesperado:', err);
+            }
+            finally {
+                if (updateSheetsBtn instanceof HTMLButtonElement) {
+                    updateSheetsBtn.disabled = false;
+                    updateSheetsBtn.textContent = 'Actualizar base de datos desde Google Sheets';
+                }
+                console.log('[ACTUALIZACIÓN SHEETS] Botón reactivado');
+            }
+        }));
+    }
+    // Botón actualizar WooCommerce
+    const updateWooBtn = document.getElementById('update-woo-btn');
+    if (updateWooBtn) {
+        updateWooBtn.addEventListener('click', () => __awaiter(void 0, void 0, void 0, function* () {
+            console.info('[ACTUALIZACIÓN WOO] Botón presionado');
+            if (updateWooBtn instanceof HTMLButtonElement) {
+                updateWooBtn.disabled = true;
+                updateWooBtn.textContent = 'Actualizando...';
+            }
+            let msg;
+            try {
+                try {
+                    console.log('[ACTUALIZACIÓN WOO] Iniciando fetch real...');
+                    const res = yield fetch('/api/update-from-woocommerce', { method: 'POST' });
+                    if (!res.ok) {
+                        let errorMsg = 'Error al actualizar desde WooCommerce.';
+                        try {
+                            const errJson = yield res.json();
+                            if (errJson && errJson.error)
+                                errorMsg = errJson.error;
+                        }
+                        catch (e) {
+                            errorMsg = `Error ${res.status}: ${res.statusText}`;
+                        }
+                        throw new Error(errorMsg);
+                    }
+                    msg = '<div class="alert alert-success mt-2">Actualización desde WooCommerce completada con éxito.</div>';
+                    console.info('[ACTUALIZACIÓN WOO] Actualización exitosa');
+                }
+                catch (fetchErr) {
+                    console.error('[ACTUALIZACIÓN WOO] Error en fetch:', fetchErr);
+                    msg = `<div class="alert alert-danger mt-2">${fetchErr instanceof Error ? fetchErr.message : 'Error al actualizar desde WooCommerce.'}</div>`;
+                }
+                try {
+                    const container = document.getElementById('woo-table-container');
+                    container === null || container === void 0 ? void 0 : container.insertAdjacentHTML('beforebegin', msg);
+                    console.log('[ACTUALIZACIÓN WOO] Mensaje mostrado al usuario');
+                }
+                catch (domErr) {
+                    console.warn('[ACTUALIZACIÓN WOO] Error al actualizar el DOM:', domErr);
+                }
+            }
+            catch (err) {
+                console.error('[ACTUALIZACIÓN WOO] Error inesperado:', err);
+            }
+            finally {
+                if (updateWooBtn instanceof HTMLButtonElement) {
+                    updateWooBtn.disabled = false;
+                    updateWooBtn.textContent = 'Actualizar base de datos desde WooCommerce';
+                }
+                console.log('[ACTUALIZACIÓN WOO] Botón reactivado');
+            }
+        }));
+    }
+});

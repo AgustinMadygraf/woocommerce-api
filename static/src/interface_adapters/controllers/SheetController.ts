@@ -5,8 +5,8 @@ Path: static/src/interface_adapters/controllers/SheetController.ts
 import { ISheetController } from './ISheetController';
 import { ISheetApiGateway } from '../gateways/ISheetApiGateway';
 import { ISheetTablePresenter } from '../presenters/ISheetTablePresenter';
-import SheetApiGateway from '../gateways/SheetApiGateway';
-import SheetTablePresenter from '../presenters/SheetTablePresenter';
+import SheetApiGateway from '../gateways/SheetApiGateway.js';
+import SheetTablePresenter from '../presenters/SheetTablePresenter.js';
 
 export default class SheetController implements ISheetController {
   private gateway: ISheetApiGateway;

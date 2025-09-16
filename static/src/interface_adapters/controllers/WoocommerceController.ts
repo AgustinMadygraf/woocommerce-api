@@ -5,8 +5,8 @@ Path: static/src/interface_adapters/controllers/WoocommerceController.ts
 import { IWoocommerceController } from './IWoocommerceController';
 import { IWoocommerceApiGateway } from '../gateways/IWoocommerceApiGateway';
 import { IWoocommerceTablePresenter } from '../presenters/IWoocommerceTablePresenter';
-import WoocommerceApiGateway from '../gateways/WoocommerceApiGateway';
-import WoocommerceTablePresenter from '../presenters/WoocommerceTablePresenter';
+import WoocommerceApiGateway from '../gateways/WoocommerceApiGateway.js';
+import WoocommerceTablePresenter from '../presenters/WoocommerceTablePresenter.js';
 
 export default class WoocommerceController implements IWoocommerceController {
   private gateway: IWoocommerceApiGateway;
